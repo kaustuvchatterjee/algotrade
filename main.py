@@ -68,17 +68,20 @@ def get_macd(data, short_window=12, long_window=26, signal_window=9, bollinger_w
     return data
 
 #----------------INPUTS-----------------------------------
-st.markdown('# Nifty 50 Index')
 st.sidebar.title('Parameters')
 with st.sidebar:
+    options = ['^NSEI', '0P0001NS9G.BO']
+    ticker = st.selectbox(label='Ticker', options=options, )
     duration = st.number_input(label='Duration (days)', min_value=30, max_value=730, value=180, step=30)
     short_window = st.number_input(label='Short Window (days)', min_value=1, max_value=60, value=24, step=1)
     long_window = st.number_input(label='Long Window (days)', min_value=1, max_value=180, value=52, step=1)
     signal_window = st.number_input(label='Signal Window (days)', min_value=1, max_value=15, value=9, step=1)
     bollinger_window = st.number_input(label='Band Window (days)', min_value=1, max_value=180, value=20, step=1)
 
+title = ticker
+st.markdown(f'# {title}')
+
 #----------------APP LOGIC---------------------------------
-ticker = "^NSEI"
 data = get_ticker_data(ticker, duration)
 data = get_macd(data, short_window, long_window, signal_window)
 up = data[data['Close']>=data['Open']]
