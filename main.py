@@ -8,6 +8,17 @@ from matplotlib import gridspec
 from datetime import datetime, timedelta
 
 ##-------------HELPER FUNCTIONS---------------------------
+def get_tickers(file_path='tickers.csv'):
+    try:
+        df = pd.read_csv(file_path)
+        options=df['ticker'].to_list()
+        option_names=df['name'].to_list()
+        return options, option_names
+    except:
+        options=['^BSESN','^NSEI']
+        option_names=['BSE SENSEX','NIFTY 50']
+        return options, option_names
+
 def get_ticker_data(ticker,duration):
     end_date = datetime.today() + timedelta(days=-1)
     start_date = end_date + timedelta(days=-duration)
@@ -68,8 +79,7 @@ def get_macd(data, short_window=12, long_window=26, signal_window=9, bollinger_w
     return data
 
 #----------------INPUTS-----------------------------------
-options = ['^NSEI', '0P0001NS9G.BO','^NSEMDCP50', '0P0001ON4N.BO','NIFTYSMLCAP50.NS','0P0001OI4H.BO']
-option_names = ['Nifty 50', 'Axis Bank Nifty 50 Index Fund', 'Nifty Midcap 50', 'Axis Nifty Midcap 50 Index Dir','NIFTY SMLCAP 50','Axis Nifty Smallcap 50 Index Dir']
+options, option_names = get_tickers('tickers.csv')
 st.sidebar.title('Parameters')
 with st.sidebar:
     ticker_name = st.selectbox(label='Ticker', options=option_names, )
