@@ -68,10 +68,10 @@ def get_macd(data, short_window=12, long_window=26, signal_window=9, bollinger_w
     # Trade Signals
     for i in range(len(data)):
         if (data.iloc[i]['Close'] > data.iloc[i]['upper_bound'] - \
-            (0.01 * (data.iloc[i]['upper_bound']-data.iloc[i]['lower_bound']))):
+            (0.05 * (data.iloc[i]['upper_bound']-data.iloc[i]['lower_bound']))):
             data.at[data.index[i],'trade_signal'] = 1
         elif (data.iloc[i]['Close'] < data.iloc[i]['lower_bound'] + \
-              (0.01 * (data.iloc[i]['upper_bound']-data.iloc[i]['lower_bound']))):
+              (0.05 * (data.iloc[i]['upper_bound']-data.iloc[i]['lower_bound']))):
             data.at[data.index[i],'trade_signal'] = -1
         else:
             data.at[data.index[i],'trade_signal'] = 0
