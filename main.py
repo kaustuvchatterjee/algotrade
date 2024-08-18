@@ -12,7 +12,7 @@ def get_ticker_data(ticker,duration):
     end_date = datetime.today() + timedelta(days=-1)
     start_date = end_date + timedelta(days=-duration)
 
-    data = yf.download(ticker, start=start_date, end=end_date)
+    data = yf.download(ticker, start=start_date, end=end_date,)
     return data
 
 def get_macd(data, short_window=12, long_window=26, signal_window=9, bollinger_window=20):
@@ -68,8 +68,8 @@ def get_macd(data, short_window=12, long_window=26, signal_window=9, bollinger_w
     return data
 
 #----------------INPUTS-----------------------------------
-options = ['^NSEI', '0P0001NS9G.BO']
-option_names = ['Nifty 50', 'Axis Bank Nifty 50 Index Fund']
+options = ['^NSEI', '0P0001NS9G.BO','^NSEMDCP50', '0P0001ON4N.BO','NIFTYSMLCAP50.NS','0P0001OI4H.BO']
+option_names = ['Nifty 50', 'Axis Bank Nifty 50 Index Fund', 'Nifty Midcap 50', 'Axis Nifty Midcap 50 Index Dir','NIFTY SMLCAP 50','Axis Nifty Smallcap 50 Index Dir']
 st.sidebar.title('Parameters')
 with st.sidebar:
     ticker_name = st.selectbox(label='Ticker', options=option_names, )
@@ -84,56 +84,59 @@ print(ticker_name, ticker)
 title = ticker_name
 st.markdown(f'# {title}')
 
-#----------------APP LOGIC---------------------------------
-data = get_ticker_data(ticker, duration)
-data = get_macd(data, short_window, long_window, signal_window)
-up = data[data['Close']>=data['Open']]
-down = data[data['Close']<data['Open']]
+try:
+    #----------------APP LOGIC---------------------------------
+    data = get_ticker_data(ticker, duration)
+    data = get_macd(data, short_window, long_window, signal_window)
+    up = data[data['Close']>=data['Open']]
+    down = data[data['Close']<data['Open']]
 
-last_data = datetime.strftime(data.index[-1],'%d %b %Y')
-st.write(f"Data till {last_data}")
-#-------------------PLOT--------------------------------------
-fig = plt.figure(figsize=(12, 6),dpi=1200)
-gs = gridspec.GridSpec(2, 1, height_ratios=[3, 1])
-ax0 = plt.subplot(gs[0])  # first subplot
-ax1 = plt.subplot(gs[1], sharex=ax0)  # second subplot
+    last_data = datetime.strftime(data.index[-1],'%d %b %Y')
+    st.write(f"Data till {last_data}")
+    #-------------------PLOT--------------------------------------
+    fig = plt.figure(figsize=(12, 6),dpi=1200)
+    gs = gridspec.GridSpec(2, 1, height_ratios=[3, 1])
+    ax0 = plt.subplot(gs[0])  # first subplot
+    ax1 = plt.subplot(gs[1], sharex=ax0)  # second subplot
 
-ax0.plot(data.index, data['Close'], color='gray', label='Nifty 50 Index', lw=0.6)
-ax0.bar(up.index, up['Close']-up['Open'], bottom=up['Open'], color='g', width=0.8)
-ax0.bar(up.index, up['High']-up['Close'], bottom=up['Close'], color='g', width=0.03)
-ax0.bar(up.index, up['Low']-up['Open'], bottom=up['Open'], color='g', width=0.03)
-ax0.bar(down.index, down['Close']-down['Open'], bottom=down['Open'], color='r', width=0.8)
-ax0.bar(down.index, down['High']-down['Close'], bottom=down['Close'], color='r', width=0.03)
-ax0.bar(down.index, down['Low']-down['Open'], bottom=down['Open'], color='r', width=0.03)
+    ax0.plot(data.index, data['Close'], color='gray', label='Nifty 50 Index', lw=0.6)
+    ax0.bar(up.index, up['Close']-up['Open'], bottom=up['Open'], color='g', width=0.8)
+    ax0.bar(up.index, up['High']-up['Close'], bottom=up['Close'], color='g', width=0.03)
+    ax0.bar(up.index, up['Low']-up['Open'], bottom=up['Open'], color='g', width=0.03)
+    ax0.bar(down.index, down['Close']-down['Open'], bottom=down['Open'], color='r', width=0.8)
+    ax0.bar(down.index, down['High']-down['Close'], bottom=down['Close'], color='r', width=0.03)
+    ax0.bar(down.index, down['Low']-down['Open'], bottom=down['Open'], color='r', width=0.03)
 
-ax0.fill_between(data.index, data['upper_bound'], data['lower_bound'], color='tab:blue', alpha=0.05)
-ax0.plot(data.index, data['sma'], color='tab:blue', lw=0.6)
+    ax0.fill_between(data.index, data['upper_bound'], data['lower_bound'], color='tab:blue', alpha=0.05)
+    ax0.plot(data.index, data['sma'], color='tab:blue', lw=0.6)
 
-for i in range(len(data)):
-    if (data.iloc[i]['z_cross'] == 1) | (data.iloc[i]['z_cross'] == -1):
-        ax0.axvline(data.index[i], color='gray', lw=0.3, alpha=0.5)
+    for i in range(len(data)):
+        if (data.iloc[i]['z_cross'] == 1) | (data.iloc[i]['z_cross'] == -1):
+            ax0.axvline(data.index[i], color='gray', lw=0.3, alpha=0.5)
 
-for i in range(len(data)):
-    if data.iloc[i]['trade_signal'] == 1:
-        ax0.axvline(data.index[i], color='tab:red', lw=0.8)
-    if data.iloc[i]['trade_signal'] == -1:
-        ax0.axvline(data.index[i], color='tab:green', lw=0.8)
+    for i in range(len(data)):
+        if data.iloc[i]['trade_signal'] == 1:
+            ax0.axvline(data.index[i], color='tab:red', lw=0.8)
+        if data.iloc[i]['trade_signal'] == -1:
+            ax0.axvline(data.index[i], color='tab:green', lw=0.8)
 
-ax0.grid(axis='y')
+    ax0.grid(axis='y')
 
 
-ax1.bar(data.index, data['MACD_Histo'], color=data['Color'])
-for i in range(len(data)):
-    if (data.iloc[i]['z_cross'] == 1) | (data.iloc[i]['z_cross'] == -1):
-        ax1.axvline(data.index[i], color='gray', lw=0.3, alpha=0.5)
+    ax1.bar(data.index, data['MACD_Histo'], color=data['Color'])
+    for i in range(len(data)):
+        if (data.iloc[i]['z_cross'] == 1) | (data.iloc[i]['z_cross'] == -1):
+            ax1.axvline(data.index[i], color='gray', lw=0.3, alpha=0.5)
 
-dateFmt = mdates.DateFormatter('%d %b %y')
-ax1.xaxis.set_major_formatter(dateFmt)
-ax1.grid(axis='y')
+    dateFmt = mdates.DateFormatter('%d %b %y')
+    ax1.xaxis.set_major_formatter(dateFmt)
+    ax1.grid(axis='y')
 
-plt.tight_layout()
-fig.subplots_adjust(hspace=0)
-# plt.savefig('nifty.png', dpi=300)
-# plt.show()
+    plt.tight_layout()
+    fig.subplots_adjust(hspace=0)
+    # plt.savefig('nifty.png', dpi=300)
+    # plt.show()
 
-st.pyplot(fig, use_container_width=True)
+    st.pyplot(fig, use_container_width=True)
+except:
+    st.write('Unable to retreive data!!!')
