@@ -126,42 +126,43 @@ st.markdown(f'# {title}')
 
 try:
     #----------------APP LOGIC---------------------------------
-    # #Live Data
-    df = nse_index()
-    df = df[df['indexName']=='NIFTY 50'][['last','open','high','low','timeVal','percChange']]
-    df['timeVal'] = pd.to_datetime(df['timeVal'])
-    df['percChange'] = pd.to_numeric(df['percChange'])
-    df['last'] = df['last'].str.replace(',', '').astype(float)
-    df['open'] = df['open'].str.replace(',', '').astype(float)
-    df['high'] = df['high'].str.replace(',', '').astype(float)
-    df['low'] = df['low'].str.replace(',', '').astype(float)
+    if ticker =='^NSEI':
+        # #Live Data
+        df = nse_index()
+        df = df[df['indexName']=='NIFTY 50'][['last','open','high','low','timeVal','percChange']]
+        df['timeVal'] = pd.to_datetime(df['timeVal'])
+        df['percChange'] = pd.to_numeric(df['percChange'])
+        df['last'] = df['last'].str.replace(',', '').astype(float)
+        df['open'] = df['open'].str.replace(',', '').astype(float)
+        df['high'] = df['high'].str.replace(',', '').astype(float)
+        df['low'] = df['low'].str.replace(',', '').astype(float)
 
-    st.markdown("""
-                <style>
-                .big-font-green {
-                font-size:36px !important;
-                color:green;
-                }
-                .big-font-red{
-                font-size:36px !important;
-                color:red;
-                }
-                </style>
-                """, unsafe_allow_html=True)
-    
-    cols = st.columns([0.1,0.2,0.2,0.7])
-    with cols[1]:
-        if df['percChange'][0]>0:            
-            st.markdown(f'<p class="big-font-green"><b>{df['last'][0]} <span>&uarr;</span></b></br></p>', unsafe_allow_html=True)
-        else:
-            st.markdown(f'<p class="big-font-red"><b>{df['last'][0]} <span>&darr;</span></b></p>', unsafe_allow_html=True)
+        st.markdown("""
+                    <style>
+                    .big-font-green {
+                    font-size:36px !important;
+                    color:green;
+                    }
+                    .big-font-red{
+                    font-size:36px !important;
+                    color:red;
+                    }
+                    </style>
+                    """, unsafe_allow_html=True)
         
-    with cols[2]:
-        st.markdown(f"**Open**: {df['open'][0]}<br> \
-                    **Low**: {df['low'][0]}<br> \
-                    **High**: {df['high'][0]}", unsafe_allow_html=True)
-    with cols[3]:
-        st.markdown(f"<br><br>*Updated at {df['timeVal'][0]}*", unsafe_allow_html=True)
+        cols = st.columns([0.1,0.2,0.2,0.7])
+        with cols[1]:
+            if df['percChange'][0]>0:            
+                st.markdown(f'<p class="big-font-green"><b>{df['last'][0]} <span>&uarr;</span></b></br></p>', unsafe_allow_html=True)
+            else:
+                st.markdown(f'<p class="big-font-red"><b>{df['last'][0]} <span>&darr;</span></b></p>', unsafe_allow_html=True)
+            
+        with cols[2]:
+            st.markdown(f"**Open**: {df['open'][0]}<br> \
+                        **Low**: {df['low'][0]}<br> \
+                        **High**: {df['high'][0]}", unsafe_allow_html=True)
+        with cols[3]:
+            st.markdown(f"<br><br>*Updated at {df['timeVal'][0]}*", unsafe_allow_html=True)
 
         
 
@@ -200,15 +201,16 @@ try:
             ax0.axvline(data.index[i], color='tab:red', lw=0.8)
         if data.iloc[i]['trade_signal'] == -1:
             ax0.axvline(data.index[i], color='tab:green', lw=0.8)
-
-    if df['last'][0]-df['open'][0]>0:
-        ax0.bar(df['timeVal'][0],df['last'][0]-df['open'][0], bottom=df['open'][0], color='g', width=0.8)
-        ax0.bar(df['timeVal'][0],df['high'][0]-df['last'][0], bottom=df['last'][0], color='g', width=0.03)
-        ax0.bar(df['timeVal'][0],df['low'][0]-df['open'][0], bottom=df['open'][0], color='g', width=0.03)
-    else:
-        ax0.bar(df['timeVal'][0],df['last'][0]-df['open'][0], bottom=df['open'][0], color='r', width=0.8)
-        ax0.bar(df['timeVal'][0],df['high'][0]-df['last'][0], bottom=df['last'][0], color='r', width=0.03)
-        ax0.bar(df['timeVal'][0],df['low'][0]-df['open'][0], bottom=df['open'][0], color='r', width=0.03)
+    
+    if ticker == '^NSEI':
+        if df['last'][0]-df['open'][0]>0:
+            ax0.bar(df['timeVal'][0],df['last'][0]-df['open'][0], bottom=df['open'][0], color='g', width=0.8)
+            ax0.bar(df['timeVal'][0],df['high'][0]-df['last'][0], bottom=df['last'][0], color='g', width=0.03)
+            ax0.bar(df['timeVal'][0],df['low'][0]-df['open'][0], bottom=df['open'][0], color='g', width=0.03)
+        else:
+            ax0.bar(df['timeVal'][0],df['last'][0]-df['open'][0], bottom=df['open'][0], color='r', width=0.8)
+            ax0.bar(df['timeVal'][0],df['high'][0]-df['last'][0], bottom=df['last'][0], color='r', width=0.03)
+            ax0.bar(df['timeVal'][0],df['low'][0]-df['open'][0], bottom=df['open'][0], color='r', width=0.03)
 
     ax0.grid(axis='y', alpha=0.3)
 
