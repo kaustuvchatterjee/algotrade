@@ -234,9 +234,8 @@ try:
     # plt.show()
 
     st.pyplot(fig, use_container_width=True)
-    st.write(f"*Chart data till {last_data}*")
-# except:
-#     st.write('Unable to retreive data!!!')
-except Exception as error:
-    st.write("unable to retreive data") 
-    print(error)
+except:
+    st.write('Unable to retreive data!!!')
+# except Exception as error:
+#     st.write("unable to retreive data") 
+#     print(error)
