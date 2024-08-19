@@ -96,9 +96,9 @@ def get_macd(data, short_window=12, long_window=26, signal_window=9, bollinger_w
     # Trade Signals
     cf = 0.05
     for i in range(len(data)):
-        if (data.iloc[i]['Close'] > data.iloc[i]['upper_bound'] - \
-            (cf * (data.iloc[i]['upper_bound']-data.iloc[i]['lower_bound']))) & \
-                (rsi.iloc[i]>75):
+        if (data.iloc[i]['Close'] > data.iloc[i]['upper_bound']) | \
+            ((data.iloc[i]['Close'] > data.iloc[i]['upper_bound'] - cf * (data.iloc[i]['upper_bound']-data.iloc[i]['lower_bound'])) & \
+                (rsi.iloc[i]>75)):
             data.at[data.index[i],'trade_signal'] = 1
         elif (data.iloc[i]['Close'] < data.iloc[i]['lower_bound'] + \
               (cf * (data.iloc[i]['upper_bound']-data.iloc[i]['lower_bound']))):
@@ -217,6 +217,7 @@ try:
     ax1.plot(data.index, rsi, color='tab:red', alpha=0.8)
     ax1.axhline(75, linestyle='--', color='red')
     ax1.fill_between(data.index,75,rsi, where=rsi>=74, color='tab:red', alpha = 0.1)
+    ax1.set_ylim([0,100])
     ax1.grid(axis='y', alpha=0.3)
 
     ax2.bar(data.index, data['MACD_Histo'], color=data['Color'])
