@@ -9,6 +9,8 @@ from datetime import datetime as dt
 from datetime import timedelta
 from nsepython import *
 
+st.set_page_config(layout="wide")
+
 ##-------------HELPER FUNCTIONS---------------------------
 def get_tickers(file_path='tickers.csv'):
     try:
@@ -127,27 +129,41 @@ try:
     # #Live Data
     df = nse_index()
     df = df[df['indexName']=='NIFTY 50'][['last','open','high','low','timeVal','percChange']]
+    df['timeVal'] = pd.to_datetime(df['timeVal'])
     df['percChange'] = pd.to_numeric(df['percChange'])
     df['last'] = df['last'].str.replace(',', '').astype(float)
     df['open'] = df['open'].str.replace(',', '').astype(float)
     df['high'] = df['high'].str.replace(',', '').astype(float)
     df['low'] = df['low'].str.replace(',', '').astype(float)
 
-    col1, col2, col3, col4 = st.columns([2,1,1,1])
-    with col1:
-        if df['percChange'][0]>0:
-            st.write(f" :green[**{df['last'][0]}**]\n*({df['timeVal'][0]})*")
-        else:
-            st.write(f" :red[{df['last'][0]}]  (Updated at {df['timeVal'][0]})")
+    st.markdown("""
+                <style>
+                .big-font-green {
+                font-size:36px !important;
+                color:green;
+                }
+                .big-font-red{
+                font-size:36px !important;
+                color:red;
+                }
+                </style>
+                """, unsafe_allow_html=True)
     
-    with col2:
-        st.write(f"Open: {df['open'][0]}")
+    cols = st.columns([0.1,0.2,0.2,0.7])
+    with cols[1]:
+        if df['percChange'][0]>0:            
+            st.markdown(f'<p class="big-font-green"><b>{df['last'][0]} <span>&uarr;</span></b></br></p>', unsafe_allow_html=True)
+        else:
+            st.markdown(f'<p class="big-font-red"><b>{df['last'][0]} <span>&darr;</span></b></p>', unsafe_allow_html=True)
+        
+    with cols[2]:
+        st.markdown(f"**Open**: {df['open'][0]}<br> \
+                    **Low**: {df['low'][0]}<br> \
+                    **High**: {df['high'][0]}", unsafe_allow_html=True)
+    with cols[3]:
+        st.markdown(f"<br><br>*Updated at {df['timeVal'][0]}*", unsafe_allow_html=True)
 
-    with col3:
-        st.write(f"High: {df['high'][0]}")
-
-    with col4:
-        st.write(f"Low: {df['low'][0]}")
+        
 
     data = get_ticker_data(ticker, duration)
     rsi = get_rsi(data)
@@ -185,21 +201,20 @@ try:
         if data.iloc[i]['trade_signal'] == -1:
             ax0.axvline(data.index[i], color='tab:green', lw=0.8)
 
-    print(df['last'][0] - df['open'][0])
-    # ax0.bar(df['timeVal'],df['last'][0]-df['open'[0]], bottom=df['open'][0], color='g', width=0.8)
-
-    # ax0.bar(up_live['timeVal'], up_live['close']-up_live['open'], bottom=up_live['0pen'], color='g', width=0.8)
-    # ax0.bar(up.index, up['High']-up['Close'], bottom=up['Close'], color='g', width=0.03)
-    # ax0.bar(up.index, up['Low']-up['Open'], bottom=up['Open'], color='g', width=0.03)
-    # ax0.bar(down.index, down['Close']-down['Open'], bottom=down['Open'], color='r', width=0.8)
-    # ax0.bar(down.index, down['High']-down['Close'], bottom=down['Close'], color='r', width=0.03)
-    # ax0.bar(down.index, down['Low']-down['Open'], bottom=down['Open'], color='r', width=0.03)
+    if df['last'][0]-df['open'][0]>0:
+        ax0.bar(df['timeVal'][0],df['last'][0]-df['open'][0], bottom=df['open'][0], color='g', width=0.8)
+        ax0.bar(df['timeVal'][0],df['high'][0]-df['last'][0], bottom=df['last'][0], color='g', width=0.03)
+        ax0.bar(df['timeVal'][0],df['low'][0]-df['open'][0], bottom=df['open'][0], color='g', width=0.03)
+    else:
+        ax0.bar(df['timeVal'][0],df['last'][0]-df['open'][0], bottom=df['open'][0], color='r', width=0.8)
+        ax0.bar(df['timeVal'][0],df['high'][0]-df['last'][0], bottom=df['last'][0], color='r', width=0.03)
+        ax0.bar(df['timeVal'][0],df['low'][0]-df['open'][0], bottom=df['open'][0], color='r', width=0.03)
 
     ax0.grid(axis='y', alpha=0.3)
 
     ax1.plot(data.index, rsi, color='tab:red', alpha=0.8)
     ax1.axhline(75, linestyle='--', color='red')
-    ax1.fill_between(data.index,75,rsi, where=rsi>=74, color='tab:red', alpha = 0.6)
+    ax1.fill_between(data.index,75,rsi, where=rsi>=74, color='tab:red', alpha = 0.1)
     ax1.grid(axis='y', alpha=0.3)
 
     ax2.bar(data.index, data['MACD_Histo'], color=data['Color'])
