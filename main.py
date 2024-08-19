@@ -5,7 +5,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from matplotlib import gridspec
-from datetime import datetime, timedelta
+from datetime import datetime as dt
+from datetime import timedelta
+from nsepython import *
 
 ##-------------HELPER FUNCTIONS---------------------------
 def get_tickers(file_path='tickers.csv'):
@@ -20,7 +22,7 @@ def get_tickers(file_path='tickers.csv'):
         return options, option_names
 
 def get_ticker_data(ticker,duration):
-    end_date = datetime.today() + timedelta(days=-1)
+    end_date = dt.today() + timedelta(days=-1)
     start_date = end_date + timedelta(days=-duration)
 
     data = yf.download(ticker, start=start_date, end=end_date,)
@@ -122,15 +124,38 @@ st.markdown(f'# {title}')
 
 try:
     #----------------APP LOGIC---------------------------------
+    # #Live Data
+    df = nse_index()
+    df = df[df['indexName']=='NIFTY 50'][['last','open','high','low','timeVal','percChange']]
+    df['percChange'] = pd.to_numeric(df['percChange'])
+    df['last'] = df['last'].str.replace(',', '').astype(float)
+    df['open'] = df['open'].str.replace(',', '').astype(float)
+    df['high'] = df['high'].str.replace(',', '').astype(float)
+    df['low'] = df['low'].str.replace(',', '').astype(float)
+
+    col1, col2, col3, col4 = st.columns([2,1,1,1])
+    with col1:
+        if df['percChange'][0]>0:
+            st.write(f" :green[**{df['last'][0]}**]\n*({df['timeVal'][0]})*")
+        else:
+            st.write(f" :red[{df['last'][0]}]  (Updated at {df['timeVal'][0]})")
+    
+    with col2:
+        st.write(f"Open: {df['open'][0]}")
+
+    with col3:
+        st.write(f"High: {df['high'][0]}")
+
+    with col4:
+        st.write(f"Low: {df['low'][0]}")
+
     data = get_ticker_data(ticker, duration)
     rsi = get_rsi(data)
     data = get_macd(data, short_window, long_window, signal_window)
     up = data[data['Close']>=data['Open']]
     down = data[data['Close']<data['Open']]
+    last_data = dt.strftime(data.index[-1],'%d %b %Y')
     
-
-    last_data = datetime.strftime(data.index[-1],'%d %b %Y')
-    st.write(f"Data till {last_data}")
     #-------------------PLOT--------------------------------------
     fig = plt.figure(figsize=(12, 6),dpi=1200)
     gs = gridspec.GridSpec(3, 1, height_ratios=[3,1,1])
@@ -160,10 +185,15 @@ try:
         if data.iloc[i]['trade_signal'] == -1:
             ax0.axvline(data.index[i], color='tab:green', lw=0.8)
 
-    
+    print(df['last'][0] - df['open'][0])
+    # ax0.bar(df['timeVal'],df['last'][0]-df['open'[0]], bottom=df['open'][0], color='g', width=0.8)
 
-    # ax0.plot(data.index, data['ema_s'], color='k', alpha=1)
-    # ax0.plot(data.index, data['ema_l'], color='green', alpha=1)
+    # ax0.bar(up_live['timeVal'], up_live['close']-up_live['open'], bottom=up_live['0pen'], color='g', width=0.8)
+    # ax0.bar(up.index, up['High']-up['Close'], bottom=up['Close'], color='g', width=0.03)
+    # ax0.bar(up.index, up['Low']-up['Open'], bottom=up['Open'], color='g', width=0.03)
+    # ax0.bar(down.index, down['Close']-down['Open'], bottom=down['Open'], color='r', width=0.8)
+    # ax0.bar(down.index, down['High']-down['Close'], bottom=down['Close'], color='r', width=0.03)
+    # ax0.bar(down.index, down['Low']-down['Open'], bottom=down['Open'], color='r', width=0.03)
 
     ax0.grid(axis='y', alpha=0.3)
 
@@ -189,7 +219,9 @@ try:
     # plt.show()
 
     st.pyplot(fig, use_container_width=True)
-except:
-    st.write('Unable to retreive data!!!')
-# except Exception as error:
-#     st.write("An exception occurred:", error) 
+    st.write(f"*Chart data till {last_data}*")
+# except:
+#     st.write('Unable to retreive data!!!')
+except Exception as error:
+    st.write("unable to retreive data") 
+    print(error)
