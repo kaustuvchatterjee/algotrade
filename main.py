@@ -26,6 +26,26 @@ def get_ticker_data(ticker,duration):
     data = yf.download(ticker, start=start_date, end=end_date,)
     return data
 
+def get_rsi(data):
+    change = data["Close"].diff()
+    # change.dropna(inplace=True)
+    change_up = change.copy()
+    change_down = change.copy()
+
+    # 
+    change_up[change_up<0] = 0
+    change_down[change_down>0] = 0
+
+    # Verify that we did not make any mistakes
+    change.equals(change_up+change_down)
+
+    # Calculate the rolling average of average up and average down
+    avg_up = change_up.rolling(14).mean()
+    avg_down = change_down.rolling(14).mean().abs()
+
+    rsi = 100 * avg_up / (avg_up + avg_down)
+    return rsi
+
 def get_macd(data, short_window=12, long_window=26, signal_window=9, bollinger_window=20):
     data['short'] = data['Close'].ewm(span=short_window).mean()
     data['long']  =  data['Close'].ewm(span=long_window).mean() 
@@ -35,7 +55,8 @@ def get_macd(data, short_window=12, long_window=26, signal_window=9, bollinger_w
     data['Candle'] = data['Close'] - data['Open']
     data['Momentum'] = data['Candle'].rolling(7).mean()
     data['Dir'] = data['MACD_Histo'].diff()
-    data['Trans'] = np.nan
+
+
 
     for i in range(len(data)):
         if data.iloc[i]['MACD_Histo'] > 0:
@@ -65,13 +86,18 @@ def get_macd(data, short_window=12, long_window=26, signal_window=9, bollinger_w
     data['upper_bound'] = data['sma'] + (stddev * 2)
     data['lower_bound'] = data['sma'] - (stddev * 2)
 
+    # RSI
+    rsi = get_rsi(data)
+
     # Trade Signals
+    cf = 0.05
     for i in range(len(data)):
         if (data.iloc[i]['Close'] > data.iloc[i]['upper_bound'] - \
-            (0.05 * (data.iloc[i]['upper_bound']-data.iloc[i]['lower_bound']))):
+            (cf * (data.iloc[i]['upper_bound']-data.iloc[i]['lower_bound']))) & \
+                (rsi.iloc[i]>75):
             data.at[data.index[i],'trade_signal'] = 1
         elif (data.iloc[i]['Close'] < data.iloc[i]['lower_bound'] + \
-              (0.05 * (data.iloc[i]['upper_bound']-data.iloc[i]['lower_bound']))):
+              (cf * (data.iloc[i]['upper_bound']-data.iloc[i]['lower_bound']))):
             data.at[data.index[i],'trade_signal'] = -1
         else:
             data.at[data.index[i],'trade_signal'] = 0
@@ -97,17 +123,21 @@ st.markdown(f'# {title}')
 try:
     #----------------APP LOGIC---------------------------------
     data = get_ticker_data(ticker, duration)
+    rsi = get_rsi(data)
     data = get_macd(data, short_window, long_window, signal_window)
     up = data[data['Close']>=data['Open']]
     down = data[data['Close']<data['Open']]
+    
 
     last_data = datetime.strftime(data.index[-1],'%d %b %Y')
     st.write(f"Data till {last_data}")
     #-------------------PLOT--------------------------------------
     fig = plt.figure(figsize=(12, 6),dpi=1200)
-    gs = gridspec.GridSpec(2, 1, height_ratios=[3, 1])
-    ax0 = plt.subplot(gs[0])  # first subplot
+    gs = gridspec.GridSpec(3, 1, height_ratios=[3,1,1])
+    ax0 = plt.subplot(gs[0])
     ax1 = plt.subplot(gs[1], sharex=ax0)  # second subplot
+    ax2 = plt.subplot(gs[2], sharex=ax0)  # first subplot
+    
 
     ax0.plot(data.index, data['Close'], color='gray', label='Nifty 50 Index', lw=0.6)
     ax0.bar(up.index, up['Close']-up['Open'], bottom=up['Open'], color='g', width=0.8)
@@ -117,7 +147,7 @@ try:
     ax0.bar(down.index, down['High']-down['Close'], bottom=down['Close'], color='r', width=0.03)
     ax0.bar(down.index, down['Low']-down['Open'], bottom=down['Open'], color='r', width=0.03)
 
-    ax0.fill_between(data.index, data['upper_bound'], data['lower_bound'], color='tab:blue', alpha=0.05)
+    ax0.fill_between(data.index, data['upper_bound'], data['lower_bound'], color='tab:blue', alpha=0.1)
     ax0.plot(data.index, data['sma'], color='tab:blue', lw=0.6)
 
     for i in range(len(data)):
@@ -130,17 +160,28 @@ try:
         if data.iloc[i]['trade_signal'] == -1:
             ax0.axvline(data.index[i], color='tab:green', lw=0.8)
 
-    ax0.grid(axis='y')
+    
 
+    # ax0.plot(data.index, data['ema_s'], color='k', alpha=1)
+    # ax0.plot(data.index, data['ema_l'], color='green', alpha=1)
 
-    ax1.bar(data.index, data['MACD_Histo'], color=data['Color'])
+    ax0.grid(axis='y', alpha=0.3)
+
+    ax1.plot(data.index, rsi, color='tab:red', alpha=0.8)
+    ax1.axhline(75, linestyle='--', color='red')
+    ax1.fill_between(data.index,75,rsi, where=rsi>=74, color='tab:red', alpha = 0.6)
+    ax1.grid(axis='y', alpha=0.3)
+
+    ax2.bar(data.index, data['MACD_Histo'], color=data['Color'])
     for i in range(len(data)):
         if (data.iloc[i]['z_cross'] == 1) | (data.iloc[i]['z_cross'] == -1):
-            ax1.axvline(data.index[i], color='gray', lw=0.3, alpha=0.5)
+            ax2.axvline(data.index[i], color='gray', lw=0.3, alpha=0.5)
+    
 
     dateFmt = mdates.DateFormatter('%d %b %y')
-    ax1.xaxis.set_major_formatter(dateFmt)
-    ax1.grid(axis='y')
+    ax2.xaxis.set_major_formatter(dateFmt)
+
+    ax2.grid(axis='y', alpha=0.3)
 
     plt.tight_layout()
     fig.subplots_adjust(hspace=0)
@@ -150,3 +191,5 @@ try:
     st.pyplot(fig, use_container_width=True)
 except:
     st.write('Unable to retreive data!!!')
+# except Exception as error:
+#     st.write("An exception occurred:", error) 
