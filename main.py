@@ -250,8 +250,8 @@ except:
 #     st.write("unable to retreive data") 
 #     print(error)
 
-while True:
-    # Your Streamlit code here
-    st.write("Rerunning script...")
-    time.sleep(300)  # 5 minutes in seconds
-    st.rerun()
+# while True:
+#     # Your Streamlit code here
+#     st.write("Rerunning script...")
+#     time.sleep(300)  # 5 minutes in seconds
+#     st.rerun()
