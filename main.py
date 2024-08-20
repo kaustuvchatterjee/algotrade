@@ -32,7 +32,6 @@ def get_tickers(file_path='tickers.csv'):
 def get_ticker_data(ticker,duration):
     end_date = dt.today().astimezone(pytz.timezone('Asia/Kolkata')) + timedelta(days=-1)
     start_date = end_date + timedelta(days=-duration)
-    st.write({str(end_date)})
 
     data = yf.download(ticker, start=start_date, end=end_date,)
     return data
@@ -246,11 +245,11 @@ try:
     # plt.show()
 
     st.pyplot(fig, use_container_width=True)
-# except:
-#     st.write('Unable to retreive data!!!')
-except Exception as error:
-    st.write("unable to retreive data") 
-    print(error)
+except:
+    st.write('Unable to retreive data!!!')
+# except Exception as error:
+#     st.write("unable to retreive data") 
+#     print(error)
 
 # while True:
 #     # Your Streamlit code here
