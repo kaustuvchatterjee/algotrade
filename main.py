@@ -5,7 +5,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from matplotlib import gridspec
-from datetime import datetime
+from datetime import datetime as dt
 from datetime import timedelta, time
 from nsepython import *
 
@@ -29,7 +29,7 @@ def get_tickers(file_path='tickers.csv'):
         return options, option_names, nse, is_index
 
 def get_ticker_data(ticker,duration):
-    end_date = datetime.today() + timedelta(days=-1)
+    end_date = dt.today() + timedelta(days=-1)
     start_date = end_date + timedelta(days=-duration)
 
     data = yf.download(ticker, start=start_date, end=end_date,)
