@@ -31,6 +31,7 @@ def get_tickers(file_path='tickers.csv'):
 def get_ticker_data(ticker,duration):
     end_date = dt.today() + timedelta(days=-1)
     start_date = end_date + timedelta(days=-duration)
+    print(start_date,end_date)
 
     data = yf.download(ticker, start=start_date, end=end_date,)
     return data
