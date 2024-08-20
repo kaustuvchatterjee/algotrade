@@ -237,11 +237,11 @@ try:
     # plt.show()
 
     st.pyplot(fig, use_container_width=True)
-# except:
-#     st.write('Unable to retreive data!!!')
-except Exception as error:
-    st.write("unable to retreive data") 
-    print(error)
+except:
+    st.write('Unable to retreive data!!!')
+# except Exception as error:
+#     st.write("unable to retreive data") 
+#     print(error)
 
 while True:
     # Your Streamlit code here
