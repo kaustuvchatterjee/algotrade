@@ -1,3 +1,5 @@
-name,ticker
-NIFTY 50,^NSEI
-Axis Bank Nifty 50 Index Fund,0P0001NS9G.BO
+name,ticker,nse,index
+NIFTY 50,^NSEI,NIFTY 50,1
+NIFTY MIDCAP 50,^NSEMDCP50,NIFTY MIDCAP 50,1
+Axis Bank Nifty 50 Index Fund,0P0001NS9G.BO,0
+Axis Nifty Midcap 50 Index Fund,0P0001ON4N.BO,0

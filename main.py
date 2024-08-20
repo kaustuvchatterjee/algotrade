@@ -18,11 +18,15 @@ def get_tickers(file_path='tickers.csv'):
         df = pd.read_csv(file_path)
         options=df['ticker'].to_list()
         option_names=df['name'].to_list()
-        return options, option_names
+        nse=df['nse'].to_list()
+        is_index=df['index'].to_list()
+        return options, option_names, nse, is_index
     except:
-        options=['^BSESN','^NSEI']
-        option_names=['BSE SENSEX','NIFTY 50']
-        return options, option_names
+        options=['^NSEI']
+        option_names=['NIFTY 50']
+        nse = ['NIFTY 50']
+        is_index=1
+        return options, option_names, nse, is_index
 
 def get_ticker_data(ticker,duration):
     end_date = dt.today() + timedelta(days=-1)
@@ -110,7 +114,7 @@ def get_macd(data, short_window=12, long_window=26, signal_window=9, bollinger_w
     return data
 
 #----------------INPUTS-----------------------------------
-options, option_names = get_tickers('tickers.csv')
+options, option_names, nse, index = get_tickers('tickers.csv')
 st.sidebar.title('Parameters')
 with st.sidebar:
     ticker_name = st.selectbox(label='Ticker', options=option_names, )
@@ -121,15 +125,17 @@ with st.sidebar:
     bollinger_window = st.number_input(label='Band Window (days)', min_value=1, max_value=180, value=20, step=1)
 
 ticker = options[option_names.index(ticker_name)]
+nse_name = nse[option_names.index(ticker_name)]
+is_index = index[option_names.index(ticker_name)]
 title = ticker_name
 st.markdown(f'# {title}')
 
 try:
     #----------------APP LOGIC---------------------------------
-    if ticker =='^NSEI':
+    if is_index==1:
         # #Live Data
         df = nse_index()
-        df = df[df['indexName']=='NIFTY 50'][['last','open','high','low','timeVal','percChange']]
+        df = df[df['indexName']==nse_name][['last','open','high','low','timeVal','percChange']]
         df['timeVal'] = pd.to_datetime(df['timeVal'])
         df['percChange'] = pd.to_numeric(df['percChange'])
         df['last'] = df['last'].str.replace(',', '').astype(float)
@@ -151,18 +157,19 @@ try:
                     """, unsafe_allow_html=True)
         
         cols = st.columns([0.1,0.4,0.2,0.3])
+
         with cols[1]:
-            if df['percChange'][0]>0:            
-                st.markdown(f'<p class="big-font-green"><b>{df['last'][0]:.2f} <span>&uarr;</span></b> ({str(df['percChange'][0])}%)</p>', unsafe_allow_html=True)
+            if df['percChange'].iloc[0]>0:          
+                st.markdown(f'<p class="big-font-green"><b>{df['last'].iloc[0]:.2f} <span>&uarr;</span></b> ({str(df['percChange'].iloc[0])}%)</p>', unsafe_allow_html=True)
             else:
-                st.markdown(f'<p class="big-font-red"><b>{df['last'][0]:.2f} <span>&darr;</span></b> ({str(df['percChange'][0])}%)</p>', unsafe_allow_html=True)
+                st.markdown(f'<p class="big-font-red"><b>{df['last'].iloc[0]:.2f} <span>&darr;</span></b> ({str(df['percChange'].iloc[0])}%)</p>', unsafe_allow_html=True)
             
         with cols[2]:
-            st.markdown(f"**Open**: {df['open'][0]:.2f}<br> \
-                        **Low**: {df['low'][0]:.2f}<br> \
-                        **High**: {df['high'][0]:.2f}", unsafe_allow_html=True)
+            st.markdown(f"**High**: {df['high'].iloc[0]:.2f}<br> \
+                        **Open**: {df['open'].iloc[0]:.2f}<br> \
+                        **Low**: {df['low'].iloc[0]:.2f}", unsafe_allow_html=True)
         with cols[3]:
-            st.markdown(f"<br><br>*Updated at {df['timeVal'][0]}*", unsafe_allow_html=True)
+            st.markdown(f"<br><br>*Updated at {df['timeVal'].iloc[0]}*", unsafe_allow_html=True)
 
         
 
@@ -172,7 +179,7 @@ try:
     up = data[data['Close']>=data['Open']]
     down = data[data['Close']<data['Open']]
     last_data = dt.strftime(data.index[-1],'%d %b %Y')
-    
+
     #-------------------PLOT--------------------------------------
     fig = plt.figure(figsize=(12, 6),dpi=1200)
     gs = gridspec.GridSpec(3, 1, height_ratios=[3,1,1])
@@ -202,15 +209,15 @@ try:
         if data.iloc[i]['trade_signal'] == -1:
             ax0.axvline(data.index[i], color='tab:green', lw=0.8)
     
-    if ticker == '^NSEI':
-        if df['last'][0]-df['open'][0]>0:
-            ax0.bar(df['timeVal'][0],df['last'][0]-df['open'][0], bottom=df['open'][0], color='g', width=0.8)
-            ax0.bar(df['timeVal'][0],df['high'][0]-df['last'][0], bottom=df['last'][0], color='g', width=0.03)
-            ax0.bar(df['timeVal'][0],df['low'][0]-df['open'][0], bottom=df['open'][0], color='g', width=0.03)
+    if is_index==1:
+        if df['last'].iloc[0]-df['open'].iloc[0]>0:
+            ax0.bar(df['timeVal'].iloc[0],df['last'].iloc[0]-df['open'].iloc[0], bottom=df['open'].iloc[0], color='g', width=0.8)
+            ax0.bar(df['timeVal'].iloc[0],df['high'].iloc[0]-df['last'].iloc[0], bottom=df['last'].iloc[0], color='g', width=0.03)
+            ax0.bar(df['timeVal'].iloc[0],df['low'].iloc[0]-df['open'].iloc[0], bottom=df['open'].iloc[0], color='g', width=0.03)
         else:
-            ax0.bar(df['timeVal'][0],df['last'][0]-df['open'][0], bottom=df['open'][0], color='r', width=0.8)
-            ax0.bar(df['timeVal'][0],df['high'][0]-df['last'][0], bottom=df['last'][0], color='r', width=0.03)
-            ax0.bar(df['timeVal'][0],df['low'][0]-df['open'][0], bottom=df['open'][0], color='r', width=0.03)
+            ax0.bar(df['timeVal'].iloc[0],df['last'].iloc[0]-df['open'].iloc[0], bottom=df['open'].iloc[0], color='r', width=0.8)
+            ax0.bar(df['timeVal'].iloc[0],df['high'].iloc[0]-df['last'].iloc[0], bottom=df['last'].iloc[0], color='r', width=0.03)
+            ax0.bar(df['timeVal'].iloc[0],df['low'].iloc[0]-df['open'].iloc[0], bottom=df['open'].iloc[0], color='r', width=0.03)
 
     ax0.grid(axis='y', alpha=0.3)
 
