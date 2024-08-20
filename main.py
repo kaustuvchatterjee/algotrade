@@ -6,10 +6,11 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from matplotlib import gridspec
 from datetime import datetime as dt
-from datetime import timedelta
+from datetime import timedelta, time
 from nsepython import *
 
 st.set_page_config(layout="wide")
+
 
 ##-------------HELPER FUNCTIONS---------------------------
 def get_tickers(file_path='tickers.csv'):
@@ -86,9 +87,9 @@ def get_macd(data, short_window=12, long_window=26, signal_window=9, bollinger_w
     
     # Bollinger Bands
     data['sma'] = data['Close'].rolling(window=bollinger_window).mean()
-    stddev = data['Close'].rolling(window=bollinger_window).std()
-    data['upper_bound'] = data['sma'] + (stddev * 2)
-    data['lower_bound'] = data['sma'] - (stddev * 2)
+    data['stddev'] = data['Close'].rolling(window=bollinger_window).std()
+    data['upper_bound'] = data['sma'] + (data['stddev'] * 2)
+    data['lower_bound'] = data['sma'] - (data['stddev'] * 2)
 
     # RSI
     rsi = get_rsi(data)
@@ -120,7 +121,6 @@ with st.sidebar:
     bollinger_window = st.number_input(label='Band Window (days)', min_value=1, max_value=180, value=20, step=1)
 
 ticker = options[option_names.index(ticker_name)]
-print(ticker_name, ticker)
 title = ticker_name
 st.markdown(f'# {title}')
 
@@ -150,12 +150,12 @@ try:
                     </style>
                     """, unsafe_allow_html=True)
         
-        cols = st.columns([0.1,0.2,0.2,0.7])
+        cols = st.columns([0.1,0.4,0.2,0.3])
         with cols[1]:
             if df['percChange'][0]>0:            
-                st.markdown(f'<p class="big-font-green"><b>{df['last'][0]} <span>&uarr;</span></b></br></p>', unsafe_allow_html=True)
+                st.markdown(f'<p class="big-font-green"><b>{df['last'][0]} <span>&uarr;</span></b> ({str(df['percChange'][0])}%)</p>', unsafe_allow_html=True)
             else:
-                st.markdown(f'<p class="big-font-red"><b>{df['last'][0]} <span>&darr;</span></b></p>', unsafe_allow_html=True)
+                st.markdown(f'<p class="big-font-red"><b>{df['last'][0]} <span>&darr;</span></b> ({str(df['percChange'][0])}%)</p>', unsafe_allow_html=True)
             
         with cols[2]:
             st.markdown(f"**Open**: {df['open'][0]}<br> \
@@ -216,7 +216,7 @@ try:
 
     ax1.plot(data.index, rsi, color='tab:red', alpha=0.8)
     ax1.axhline(75, linestyle='--', color='red')
-    ax1.fill_between(data.index,75,rsi, where=rsi>=74, color='tab:red', alpha = 0.1)
+    ax1.fill_between(data.index,75,rsi, where=rsi>=74, color='tab:orange', alpha = 0.1)
     ax1.set_ylim([0,100])
     ax1.grid(axis='y', alpha=0.3)
 
@@ -237,8 +237,14 @@ try:
     # plt.show()
 
     st.pyplot(fig, use_container_width=True)
-except:
-    st.write('Unable to retreive data!!!')
-# except Exception as error:
-#     st.write("unable to retreive data") 
-#     print(error)
+# except:
+#     st.write('Unable to retreive data!!!')
+except Exception as error:
+    st.write("unable to retreive data") 
+    print(error)
+
+while True:
+    # Your Streamlit code here
+    st.write("Rerunning script...")
+    time.sleep(300)  # 5 minutes in seconds
+    st.rerun()
