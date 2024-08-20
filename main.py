@@ -153,14 +153,14 @@ try:
         cols = st.columns([0.1,0.4,0.2,0.3])
         with cols[1]:
             if df['percChange'][0]>0:            
-                st.markdown(f'<p class="big-font-green"><b>{df['last'][0]} <span>&uarr;</span></b> ({str(df['percChange'][0])}%)</p>', unsafe_allow_html=True)
+                st.markdown(f'<p class="big-font-green"><b>{df['last'][0]:.2f} <span>&uarr;</span></b> ({str(df['percChange'][0])}%)</p>', unsafe_allow_html=True)
             else:
-                st.markdown(f'<p class="big-font-red"><b>{df['last'][0]} <span>&darr;</span></b> ({str(df['percChange'][0])}%)</p>', unsafe_allow_html=True)
+                st.markdown(f'<p class="big-font-red"><b>{df['last'][0]:.2f} <span>&darr;</span></b> ({str(df['percChange'][0])}%)</p>', unsafe_allow_html=True)
             
         with cols[2]:
-            st.markdown(f"**Open**: {df['open'][0]}<br> \
-                        **Low**: {df['low'][0]}<br> \
-                        **High**: {df['high'][0]}", unsafe_allow_html=True)
+            st.markdown(f"**Open**: {df['open'][0]:.2f}<br> \
+                        **Low**: {df['low'][0]:.2f}<br> \
+                        **High**: {df['high'][0]:.2f}", unsafe_allow_html=True)
         with cols[3]:
             st.markdown(f"<br><br>*Updated at {df['timeVal'][0]}*", unsafe_allow_html=True)
 
