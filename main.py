@@ -15,25 +15,26 @@ st.set_page_config(layout="wide")
 
 ##-------------HELPER FUNCTIONS---------------------------
 def get_tickers(file_path='tickers.csv'):
-    # try:
-    df = pd.read_csv(file_path)
-    options=df['ticker'].to_list()
-    option_names=df['name'].to_list()
-    nse_symbol=df['nse'].to_list()
-    type=df['type'].to_list()
+    try:
+        df = pd.read_csv(file_path)
+        options=df['ticker'].to_list()
+        option_names=df['name'].to_list()
+        nse_symbol=df['nse'].to_list()
+        type=df['type'].to_list()
+    
+    except:
+        options=['^NSEI']
+        option_names=['NIFTY 50']
+        nse_symbol = ['NIFTY 50']
+        type='IN'
+    
     return options, option_names, nse_symbol, type
-    # except:
-    #     options=['^NSEI']
-    #     option_names=['NIFTY 50']
-    #     nse_symbol = ['NIFTY 50']
-    #     type='IN'
-        # return options, option_names, nse_symbol, type
 
 def get_ticker_data(ticker,duration):
     end_date = dt.today().astimezone(pytz.timezone('Asia/Kolkata')) + timedelta(days=-1)
     start_date = end_date + timedelta(days=-duration)
 
-    data = yf.download(ticker, start=start_date, end=end_date,)
+    data = yf.download(ticker, start=start_date, end=end_date, period='1d')
     return data
 
 def get_live_data(nse_symbol, type):
