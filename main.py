@@ -171,7 +171,7 @@ try:
     #----------------APP LOGIC---------------------------------
     if type in ['IN','EQ']:
         live_data = get_live_data(nse_symbol, type)
-        print(live_data)
+
 
         st.markdown("""
                     <style>
