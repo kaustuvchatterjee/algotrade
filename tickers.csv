@@ -1,6 +1,6 @@
-name,ticker,nse,index
-NIFTY 50,^NSEI,NIFTY 50,1
-NIFTY MIDCAP 50,^NSEMDCP50,NIFTY MIDCAP 50,1
-Axis Bank Nifty 50 Index Fund,0P0001NS9G.BO,,0
-Nippon India ETF Nifty 50 BeES,NIFTYBEES.NS,,0
-Axis Nifty Midcap 50 Index Fund,0P0001ON4N.BO,,0
+name,ticker,nse,type
+NIFTY 50,^NSEI,NIFTY 50,IN
+NIFTY MIDCAP 50,^NSEMDCP50,NIFTY MIDCAP 50,IN
+Axis Bank Nifty 50 Index Fund,0P0001NS9G.BO,,MF
+Nippon India ETF Nifty 50 BeES,NIFTYBEES.NS,NIFTYBEES,EQ
+Axis Nifty Midcap 50 Index Fund,0P0001ON4N.BO,,MF
