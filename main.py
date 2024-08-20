@@ -7,6 +7,7 @@ import matplotlib.dates as mdates
 from matplotlib import gridspec
 from datetime import datetime as dt
 from datetime import timedelta, time
+import pytz
 from nsepython import *
 
 st.set_page_config(layout="wide")
@@ -29,7 +30,7 @@ def get_tickers(file_path='tickers.csv'):
         return options, option_names, nse, is_index
 
 def get_ticker_data(ticker,duration):
-    end_date = dt.today() + timedelta(days=-1)
+    end_date = dt.today().astimezone(pytz.timezone('Asia/Kolkata')) + timedelta(days=-1)
     start_date = end_date + timedelta(days=-duration)
     st.write({str(end_date)})
 
@@ -245,11 +246,11 @@ try:
     # plt.show()
 
     st.pyplot(fig, use_container_width=True)
-except:
-    st.write('Unable to retreive data!!!')
-# except Exception as error:
-#     st.write("unable to retreive data") 
-#     print(error)
+# except:
+#     st.write('Unable to retreive data!!!')
+except Exception as error:
+    st.write("unable to retreive data") 
+    print(error)
 
 # while True:
 #     # Your Streamlit code here
