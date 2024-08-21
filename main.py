@@ -12,7 +12,7 @@ st.set_page_config(layout="wide")
 
 
 ##-------------HELPER FUNCTIONS---------------------------
-def get_tickers(file_path='tickers1.csv'):
+def get_tickers(file_path='tickers.csv'):
     try:
         df = pd.read_csv(file_path)
         tickers=df['ticker'].to_list()
