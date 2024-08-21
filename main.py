@@ -186,7 +186,8 @@ if status == 1:
                     **Open**: {live_data['open']:.2f}<br> \
                     **Low**: {live_data['low']:.2f}", unsafe_allow_html=True)
     with cols[3]:
-        st.markdown(f"<br><br>*Updated at {live_data['timeVal']}*", unsafe_allow_html=True)
+        last_updated = dt.strftime(live_data['timeVal'],'%d %b %Y %H:%M')
+        st.markdown(f"<br><br>*Updated at {last_updated}*", unsafe_allow_html=True)
 # else:
 #     st.write('Unable to reteive live data!')
 
@@ -198,7 +199,6 @@ if (status == 1) & (len(data)>0):
     data = get_macd(data, short_window, long_window, signal_window)
     up = data[data['Close']>=data['Open']]
     down = data[data['Close']<data['Open']]
-    last_data = dt.strftime(data.index[-1],'%d %b %Y')
 else:
     st.write('Unable to retreive historical data!')
 
