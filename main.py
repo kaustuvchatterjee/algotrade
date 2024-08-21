@@ -34,7 +34,7 @@ def get_ticker_data(ticker,duration):
     end_date = dt.today().astimezone(pytz.timezone('Asia/Kolkata')) + timedelta(days=-1)
     start_date = end_date + timedelta(days=-duration)
 
-    data = yf.download(ticker, start=start_date, end=end_date, period='1d')
+    data = yf.download(ticker, start=start_date, end=end_date)
     return data
 
 def get_live_data(nse_symbol, type):
