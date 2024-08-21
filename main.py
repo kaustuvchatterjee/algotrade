@@ -7,7 +7,7 @@ import matplotlib.dates as mdates
 from matplotlib import gridspec
 from datetime import datetime as dt
 from datetime import timedelta, time
-import pytz
+
 st.set_page_config(layout="wide")
 
 
@@ -28,13 +28,13 @@ def get_tickers(file_path='tickers1.csv'):
 
 def get_ticker_data(ticker,duration):
     try:
-        end_date = dt.today().astimezone(pytz.timezone('Asia/Kolkata')) + timedelta(days=-1)
+        end_date = dt.today() + timedelta(days=-1)
         start_date = end_date + timedelta(days=-duration)
 
         data = yf.download(ticker, start=start_date, end=end_date)
+        data.index = data.index.tz_localize('Asia/Kolkata')
         status = 1
     except Exception as error:
-        st.write('Unable to download historical data!')
         status = 0
         data=[]
         print(error)
