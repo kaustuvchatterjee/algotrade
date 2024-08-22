@@ -140,7 +140,7 @@ def get_macd(data, short_window=12, long_window=26, signal_window=9, bollinger_w
     
     return data
 
-@st.fragment(run_every='30s')
+@st.fragment(run_every='10s')
 def update_live_data():
     ticker = tickers[ticker_names.index(st.session_state.ticker_name)]
     live_data, status = get_live_data(ticker)
@@ -175,7 +175,7 @@ def update_live_data():
             last_updated = dt.strftime(live_data['timeVal'],'%d %b %Y %H:%M')
             st.markdown(f"<br><br>*Updated at {last_updated}*", unsafe_allow_html=True)
 
-@st.fragment(run_every='30s')
+@st.fragment(run_every='10s')
 def update_live_data_plot(ax):
     ticker = tickers[ticker_names.index(st.session_state.ticker_name)]
     live_data, status = get_live_data(ticker)
