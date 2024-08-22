@@ -53,6 +53,7 @@ def get_live_data(ticker):
                         'high': t.info['dayHigh'],
                         'low': t.info['dayLow'],
                         'pchange': 100*((today_data['Close'].iloc[-1]-t.info['previousClose'])/t.info['previousClose']),
+                        'prev_close': t.info['previousClose']
                         }
         status = 1
 
@@ -168,7 +169,8 @@ def update_live_data():
                 st.markdown(f'<p class="big-font-red"><b>{live_data['last']:.2f} <span>&darr;</span></b> ({live_data['pchange']:.2f}%)</p>', unsafe_allow_html=True)
             
         with cols[2]:
-            st.markdown(f"**High**: {live_data['high']:.2f}<br> \
+            st.markdown(f"**Prev Close**: {live_data['prev_close']:.2f}<br> \
+                        **High**: {live_data['high']:.2f}<br> \
                         **Open**: {live_data['open']:.2f}<br> \
                         **Low**: {live_data['low']:.2f}", unsafe_allow_html=True)
         with cols[3]:
