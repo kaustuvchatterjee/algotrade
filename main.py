@@ -94,8 +94,6 @@ def get_macd(data, short_window=12, long_window=26, signal_window=9, bollinger_w
     data['Momentum'] = data['Candle'].rolling(7).mean()
     data['Dir'] = data['MACD_Histo'].diff()
 
-
-
     for i in range(len(data)):
         if data.iloc[i]['MACD_Histo'] > 0:
             if data.iloc[i]['Dir']>0:
@@ -142,55 +140,71 @@ def get_macd(data, short_window=12, long_window=26, signal_window=9, bollinger_w
     
     return data
 
+@st.fragment(run_every='30s')
+def update_live_data():
+    ticker = tickers[ticker_names.index(st.session_state.ticker_name)]
+    live_data, status = get_live_data(ticker)
+    placeholder = st.empty()
+    with placeholder.container():
+        cols = st.columns([0.1,0.4,0.2,0.3])
+    if status == 1:
+        st.markdown("""
+                    <style>
+                    .big-font-green {
+                    font-size:36px !important;
+                    color:green;
+                    }
+                    .big-font-red{
+                    font-size:36px !important;
+                    color:red;
+                    }
+                    </style>
+                    """, unsafe_allow_html=True)
+
+        with cols[1]:
+            if live_data['pchange']>0:          
+                st.markdown(f'<p class="big-font-green"><b>{live_data['last']:.2f} <span>&uarr;</span></b> ({live_data['pchange']:.2f}%)</p>', unsafe_allow_html=True)
+            else:
+                st.markdown(f'<p class="big-font-red"><b>{live_data['last']:.2f} <span>&darr;</span></b> ({live_data['pchange']:.2f}%)</p>', unsafe_allow_html=True)
+            
+        with cols[2]:
+            st.markdown(f"**High**: {live_data['high']:.2f}<br> \
+                        **Open**: {live_data['open']:.2f}<br> \
+                        **Low**: {live_data['low']:.2f}", unsafe_allow_html=True)
+        with cols[3]:
+            last_updated = dt.strftime(live_data['timeVal'],'%d %b %Y %H:%M')
+            st.markdown(f"<br><br>*Updated at {last_updated}*", unsafe_allow_html=True)
+
+@st.fragment(run_every='30s')
+def update_live_data_plot(ax):
+    ticker = tickers[ticker_names.index(st.session_state.ticker_name)]
+    live_data, status = get_live_data(ticker)
+    if status==1:
+        if live_data['last']-live_data['open']>0:
+            ax.bar(live_data['timeVal'],live_data['last']-live_data['open'], bottom=live_data['open'], color='g', width=0.8)
+            ax.bar(live_data['timeVal'],live_data['high']-live_data['last'], bottom=live_data['last'], color='g', width=0.03)
+            ax.bar(live_data['timeVal'],live_data['low']-live_data['open'], bottom=live_data['open'], color='g', width=0.03)
+        else:
+            ax.bar(live_data['timeVal'],live_data['last']-live_data['open'], bottom=live_data['open'], color='r', width=0.8)
+            ax.bar(live_data['timeVal'],live_data['high']-live_data['last'], bottom=live_data['last'], color='r', width=0.03)
+            ax.bar(live_data['timeVal'],live_data['low']-live_data['open'], bottom=live_data['open'], color='r', width=0.03)
 #----------------INPUTS-----------------------------------
 tickers, ticker_names = get_tickers('tickers.csv')
 st.sidebar.title('Parameters')
 with st.sidebar:
-    ticker_name = st.selectbox(label='Ticker', options=ticker_names )
+    st.session_state.ticker_name = st.selectbox(label='Ticker', options=ticker_names, )
+    # st.session_state.index = st.session_state.ticker_names.index(ticker_name)
     duration = st.number_input(label='Duration (days)', min_value=30, max_value=730, value=180, step=30)
     short_window = st.number_input(label='Short Window (days)', min_value=1, max_value=60, value=24, step=1)
     long_window = st.number_input(label='Long Window (days)', min_value=1, max_value=180, value=52, step=1)
     signal_window = st.number_input(label='Signal Window (days)', min_value=1, max_value=15, value=9, step=1)
     bollinger_window = st.number_input(label='Band Window (days)', min_value=1, max_value=180, value=20, step=1)
 
-ticker = tickers[ticker_names.index(ticker_name)]
-st.markdown(f'# {ticker_name}')
-
+st.markdown(f'# {st.session_state.ticker_name}')
 #----------------APP LOGIC---------------------------------
-##-----------GET LIVE DATA--------------------------
-live_data, status = get_live_data(ticker)
-if status == 1:
-    st.markdown("""
-                <style>
-                .big-font-green {
-                font-size:36px !important;
-                color:green;
-                }
-                .big-font-red{
-                font-size:36px !important;
-                color:red;
-                }
-                </style>
-                """, unsafe_allow_html=True)
-
-    cols = st.columns([0.1,0.4,0.2,0.3])
-
-    with cols[1]:
-        if live_data['pchange']>0:          
-            st.markdown(f'<p class="big-font-green"><b>{live_data['last']:.2f} <span>&uarr;</span></b> ({live_data['pchange']:.2f}%)</p>', unsafe_allow_html=True)
-        else:
-            st.markdown(f'<p class="big-font-red"><b>{live_data['last']:.2f} <span>&darr;</span></b> ({live_data['pchange']:.2f}%)</p>', unsafe_allow_html=True)
-        
-    with cols[2]:
-        st.markdown(f"**High**: {live_data['high']:.2f}<br> \
-                    **Open**: {live_data['open']:.2f}<br> \
-                    **Low**: {live_data['low']:.2f}", unsafe_allow_html=True)
-    with cols[3]:
-        last_updated = dt.strftime(live_data['timeVal'],'%d %b %Y %H:%M')
-        st.markdown(f"<br><br>*Updated at {last_updated}*", unsafe_allow_html=True)
-# else:
-#     st.write('Unable to reteive live data!')
-
+ticker = tickers[ticker_names.index(st.session_state.ticker_name)]
+# placeholder = st.empty()
+update_live_data()
 ##-----------GET HISTORICAL DATA--------------------------
 data, status = get_ticker_data(ticker, duration)
 
@@ -233,18 +247,9 @@ if len(data)>0:
             if data.iloc[i]['trade_signal'] == -1:
                 ax0.axvline(data.index[i], color='tab:green', lw=0.8)
 
-        if len(live_data)>0:
-            if live_data['last']-live_data['open']>0:
-                ax0.bar(live_data['timeVal'],live_data['last']-live_data['open'], bottom=live_data['open'], color='g', width=0.8)
-                ax0.bar(live_data['timeVal'],live_data['high']-live_data['last'], bottom=live_data['last'], color='g', width=0.03)
-                ax0.bar(live_data['timeVal'],live_data['low']-live_data['open'], bottom=live_data['open'], color='g', width=0.03)
-            else:
-                ax0.bar(live_data['timeVal'],live_data['last']-live_data['open'], bottom=live_data['open'], color='r', width=0.8)
-                ax0.bar(live_data['timeVal'],live_data['high']-live_data['last'], bottom=live_data['last'], color='r', width=0.03)
-                ax0.bar(live_data['timeVal'],live_data['low']-live_data['open'], bottom=live_data['open'], color='r', width=0.03)
+        update_live_data_plot(ax0)
 
         ax0.grid(axis='y', alpha=0.3)
-
         ax1.plot(data.index, rsi, color='tab:red', alpha=0.8)
         ax1.axhline(75, linestyle='--', color='red')
         ax1.fill_between(data.index,75,rsi, where=rsi>=74, color='tab:orange', alpha = 0.1)
@@ -274,6 +279,9 @@ if len(data)>0:
         print(error)
 else:
     st.write('Unable to plot data!')
+
+#-----Plot Live Data---------
+
 
 
 # while True:
