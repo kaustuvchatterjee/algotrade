@@ -188,6 +188,7 @@ def update_live_data_plot(ax):
             ax.bar(live_data['timeVal'],live_data['last']-live_data['open'], bottom=live_data['open'], color='r', width=0.8)
             ax.bar(live_data['timeVal'],live_data['high']-live_data['last'], bottom=live_data['last'], color='r', width=0.03)
             ax.bar(live_data['timeVal'],live_data['low']-live_data['open'], bottom=live_data['open'], color='r', width=0.03)
+
 #----------------INPUTS-----------------------------------
 tickers, ticker_names = get_tickers('tickers.csv')
 st.sidebar.title('Parameters')
@@ -222,10 +223,10 @@ if len(data)>0:
         fig = plt.figure(figsize=(12, 6),dpi=1200)
         gs = gridspec.GridSpec(3, 1, height_ratios=[3,1,1])
         ax0 = plt.subplot(gs[0])
-        ax1 = plt.subplot(gs[1], sharex=ax0)  # second subplot
-        ax2 = plt.subplot(gs[2], sharex=ax0)  # first subplot
-
-
+        ax1 = plt.subplot(gs[1])
+        ax2 = plt.subplot(gs[2])
+        
+        
         ax0.plot(data.index, data['Close'], color='gray', label='Nifty 50 Index', lw=0.6)
         ax0.bar(up.index, up['Close']-up['Open'], bottom=up['Open'], color='g', width=0.8)
         ax0.bar(up.index, up['High']-up['Close'], bottom=up['Close'], color='g', width=0.03)
@@ -266,7 +267,8 @@ if len(data)>0:
         ax2.xaxis.set_major_formatter(dateFmt)
 
         ax2.grid(axis='y', alpha=0.3)
-
+        plt.setp(ax0.get_xticklabels(), visible=False)
+        plt.setp(ax1.get_xticklabels(), visible=False)
         plt.tight_layout()
         fig.subplots_adjust(hspace=0)
         # plt.savefig('nifty.png', dpi=300)
