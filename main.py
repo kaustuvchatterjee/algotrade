@@ -32,7 +32,7 @@ def get_ticker_data(ticker,duration):
         end_date = end_date.astimezone('Asia/Kolkata')
         start_date = end_date + timedelta(days=-duration)
         data = yf.download(ticker, start=start_date, end=end_date)
-        data.index = data.index.tz_localize('Asia/Kolkata')
+        # data.index = data.index.tz_localize('Asia/Kolkata')
         status = 1
     except Exception as error:
         status = 0
