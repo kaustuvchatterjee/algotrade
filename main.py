@@ -191,7 +191,13 @@ def update_live_data_plot(ax):
             ax.bar(live_data['timeVal'],live_data['last']-live_data['open'], bottom=live_data['open'], color='r', width=0.8)
             ax.bar(live_data['timeVal'],live_data['high']-live_data['last'], bottom=live_data['last'], color='r', width=0.03)
             ax.bar(live_data['timeVal'],live_data['low']-live_data['open'], bottom=live_data['open'], color='r', width=0.03)
-
+        ax.axhline(live_data['prev_close'], color = 'black', lw=0.3, alpha=0.8)
+        if live_data['pchange']>0:
+            color = 'tab:green'
+        else:
+            color = 'tab:red'
+        ax.axhline(live_data['last'], color = color, lw=0.3, alpha=0.8)
+        ax.fill_between(live_data['timeVal'],live_data['prev_close'],live_data['last'], color=color, alpha=0.1)
 #----------------INPUTS-----------------------------------
 tickers, ticker_names = get_tickers('tickers.csv')
 st.sidebar.title('Parameters')
