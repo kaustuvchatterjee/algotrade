@@ -276,7 +276,7 @@ if len(data)>0:
         dateFmt = mdates.DateFormatter('%d %b %y')
         ax2.xaxis.set_major_formatter(dateFmt)
         ax2.grid(axis='y', alpha=0.6)
-        ax2.set_title(' MACD',loc='left',y=0.78)
+        ax2.set_title(f" MACD",loc='left',y=0.78)
 
         plt.setp(ax0.get_xticklabels(), visible=False)
         plt.setp(ax1.get_xticklabels(), visible=False)
