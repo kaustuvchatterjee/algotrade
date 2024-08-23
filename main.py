@@ -28,7 +28,7 @@ def get_tickers(file_path='tickers.csv'):
 
 def get_ticker_data(ticker,duration):
     try:
-        end_date = dt.today() + timedelta(days=-1)
+        end_date = dt.today() # + timedelta(days=-1)
         # end_date = end_date.astimezone('Asia/Kolkata')
         start_date = end_date + timedelta(days=-duration)
         # start_date = start_date.astimezone('Asia/Kolkata')
