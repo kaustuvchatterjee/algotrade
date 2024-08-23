@@ -28,9 +28,8 @@ def get_tickers(file_path='tickers.csv'):
 
 def get_ticker_data(ticker,duration):
     try:
-        end_date = dt.today() + timedelta(days=-1)
+        end_date = dt.today().astimezone('Asia/Kolkata') + timedelta(days=-1)
         start_date = end_date + timedelta(days=-duration)
-
         data = yf.download(ticker, start=start_date, end=end_date)
         data.index = data.index.tz_localize('Asia/Kolkata')
         status = 1
