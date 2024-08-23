@@ -279,7 +279,7 @@ if len(data)>0:
                 ax2.axvline(data.index[i], color='gray', lw=0.3, alpha=0.6)
 
 
-        dateFmt = mdates.DateFormatter('%d %b %y')
+        dateFmt = mdates.DateFormatter('%d %b')
         ax2.xaxis.set_major_formatter(dateFmt)
         ax2.grid(axis='y', alpha=0.6)
         ax2.set_title(f" MACD",loc='left',y=0.78)
