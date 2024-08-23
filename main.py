@@ -197,7 +197,7 @@ def update_live_data_plot(ax):
         else:
             color = 'tab:red'
         ax.axhline(live_data['last'], color = color, lw=0.3, alpha=0.8)
-        ax.fill_between(live_data['timeVal'],live_data['prev_close'],live_data['last'], color=color, alpha=0.1)
+        # ax.fill_between(live_data['timeVal'],live_data['prev_close'],live_data['last'], color=color, alpha=0.1)
 #----------------INPUTS-----------------------------------
 tickers, ticker_names = get_tickers('tickers.csv')
 st.sidebar.title('Parameters')
