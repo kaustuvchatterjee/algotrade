@@ -199,8 +199,8 @@ with st.sidebar:
     st.session_state.ticker_name = st.selectbox(label='Ticker', options=ticker_names, )
     # st.session_state.index = st.session_state.ticker_names.index(ticker_name)
     duration = st.number_input(label='Duration (days)', min_value=30, max_value=730, value=180, step=30)
-    short_window = st.number_input(label='Short Window (days)', min_value=1, max_value=60, value=24, step=1)
-    long_window = st.number_input(label='Long Window (days)', min_value=1, max_value=180, value=52, step=1)
+    short_window = st.number_input(label='Short Window (days)', min_value=1, max_value=60, value=12, step=1)
+    long_window = st.number_input(label='Long Window (days)', min_value=1, max_value=180, value=26, step=1)
     signal_window = st.number_input(label='Signal Window (days)', min_value=1, max_value=15, value=9, step=1)
     bollinger_window = st.number_input(label='Band Window (days)', min_value=1, max_value=180, value=20, step=1)
 
@@ -226,8 +226,8 @@ if len(data)>0:
         fig = plt.figure(figsize=(12, 6),dpi=1200)
         gs = gridspec.GridSpec(3, 1, height_ratios=[3,1,1])
         ax0 = plt.subplot(gs[0])
-        ax1 = plt.subplot(gs[1])
-        ax2 = plt.subplot(gs[2])
+        ax1 = plt.subplot(gs[1], sharex=ax0)
+        ax2 = plt.subplot(gs[2], sharex=ax0)
         
         
         ax0.plot(data.index, data['Close'], color='gray', label='Nifty 50 Index', lw=0.6)
@@ -243,7 +243,7 @@ if len(data)>0:
 
         for i in range(len(data)):
             if (data.iloc[i]['z_cross'] == 1) | (data.iloc[i]['z_cross'] == -1):
-                ax0.axvline(data.index[i], color='gray', lw=0.3, alpha=0.5)
+                ax0.axvline(data.index[i], color='gray', lw=0.3, alpha=0.6)
 
         for i in range(len(data)):
             if data.iloc[i]['trade_signal'] == 1:
@@ -252,24 +252,32 @@ if len(data)>0:
                 ax0.axvline(data.index[i], color='tab:green', lw=0.8)
 
         update_live_data_plot(ax0)
-
         ax0.grid(axis='y', alpha=0.3)
+        ax0.set_title(" "+st.session_state.ticker_name,loc='left',y=0.92)
+        #-----RSI Plot------------
         ax1.plot(data.index, rsi, color='tab:red', alpha=0.8)
         ax1.axhline(75, linestyle='--', color='red')
         ax1.fill_between(data.index,75,rsi, where=rsi>=74, color='tab:orange', alpha = 0.1)
         ax1.set_ylim([0,100])
-        ax1.grid(axis='y', alpha=0.3)
+        for i in range(len(data)):
+            if (data.iloc[i]['z_cross'] == 1) | (data.iloc[i]['z_cross'] == -1):
+                ax1.axvline(data.index[i], color='gray', lw=0.3, alpha=0.3)
 
+        ax1.grid(axis='y', alpha=0.3)
+        ax1.set_title(' RSI',loc='left',y=0.78)
+
+        #-----MACD Plot---------
         ax2.bar(data.index, data['MACD_Histo'], color=data['Color'])
         for i in range(len(data)):
             if (data.iloc[i]['z_cross'] == 1) | (data.iloc[i]['z_cross'] == -1):
-                ax2.axvline(data.index[i], color='gray', lw=0.3, alpha=0.5)
+                ax2.axvline(data.index[i], color='gray', lw=0.3, alpha=0.6)
 
 
         dateFmt = mdates.DateFormatter('%d %b %y')
         ax2.xaxis.set_major_formatter(dateFmt)
+        ax2.grid(axis='y', alpha=0.6)
+        ax2.set_title(' MACD',loc='left',y=0.78)
 
-        ax2.grid(axis='y', alpha=0.3)
         plt.setp(ax0.get_xticklabels(), visible=False)
         plt.setp(ax1.get_xticklabels(), visible=False)
         plt.tight_layout()
