@@ -7,9 +7,10 @@ import matplotlib.dates as mdates
 from matplotlib import gridspec
 from datetime import datetime as dt
 from datetime import timedelta, time
+import pytz
 
 st.set_page_config(layout="wide")
-
+tz=pytz.timezone('Asia/Kolkata')
 
 ##-------------HELPER FUNCTIONS---------------------------
 def get_tickers(file_path='tickers.csv'):
@@ -46,14 +47,16 @@ def get_live_data(ticker):
     try:
         t = yf.Ticker(ticker)
         today_data = t.history(period='1d', interval='1m')
-        timeVal = today_data.index[-1]
+        timeVal = today_data.index[-1].replace(tzinfo=tz)
         live_data = {'timeVal': timeVal,
                         'open': t.info['open'],
                         'last': today_data['Close'].iloc[-1],
                         'high': t.info['dayHigh'],
                         'low': t.info['dayLow'],
                         'pchange': 100*((today_data['Close'].iloc[-1]-t.info['previousClose'])/t.info['previousClose']),
-                        'prev_close': t.info['previousClose']
+                        'prev_close': t.info['previousClose'],
+                        'tp_start': dt.fromtimestamp(t.history_metadata['currentTradingPeriod']['regular']['start'],tz=tz),
+                        'tp_end': dt.fromtimestamp(t.history_metadata['currentTradingPeriod']['regular']['end'],tz=tz)
                         }
         status = 1
 
@@ -182,14 +185,15 @@ def update_live_data_plot(ax):
     ticker = tickers[ticker_names.index(st.session_state.ticker_name)]
     live_data, status = get_live_data(ticker)
     if status==1:
-        if live_data['last']-live_data['open']>0:
-            ax.bar(live_data['timeVal'],live_data['last']-live_data['open'], bottom=live_data['open'], color='g', width=0.8)
-            ax.bar(live_data['timeVal'],live_data['high']-live_data['last'], bottom=live_data['last'], color='g', width=0.03)
-            ax.bar(live_data['timeVal'],live_data['low']-live_data['open'], bottom=live_data['open'], color='g', width=0.03)
-        else:
-            ax.bar(live_data['timeVal'],live_data['last']-live_data['open'], bottom=live_data['open'], color='r', width=0.8)
-            ax.bar(live_data['timeVal'],live_data['high']-live_data['last'], bottom=live_data['last'], color='r', width=0.03)
-            ax.bar(live_data['timeVal'],live_data['low']-live_data['open'], bottom=live_data['open'], color='r', width=0.03)
+        if (dt.now(tz=tz)>live_data['tp_start']) & (dt.now(tz=tz)<live_data['tp_end']):
+            if live_data['last']-live_data['open']>0:
+                ax.bar(live_data['timeVal'],live_data['last']-live_data['open'], bottom=live_data['open'], color='g', width=0.8)
+                ax.bar(live_data['timeVal'],live_data['high']-live_data['last'], bottom=live_data['last'], color='g', width=0.03)
+                ax.bar(live_data['timeVal'],live_data['low']-live_data['open'], bottom=live_data['open'], color='g', width=0.03)
+            else:
+                ax.bar(live_data['timeVal'],live_data['last']-live_data['open'], bottom=live_data['open'], color='r', width=0.8)
+                ax.bar(live_data['timeVal'],live_data['high']-live_data['last'], bottom=live_data['last'], color='r', width=0.03)
+                ax.bar(live_data['timeVal'],live_data['low']-live_data['open'], bottom=live_data['open'], color='r', width=0.03)
 
 #----------------INPUTS-----------------------------------
 tickers, ticker_names = get_tickers('tickers.csv')
