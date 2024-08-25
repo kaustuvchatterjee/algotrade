@@ -179,7 +179,7 @@ def update_live_data():
                         **Low**: {live_data['low']:.2f}", unsafe_allow_html=True)
         with cols[3]:
             last_updated = dt.strftime(live_data['timeVal'],'%d %b %Y %H:%M')
-            st.markdown(f"<br><br>*Updated at {last_updated}*", unsafe_allow_html=True)
+            st.markdown(f"<br><br><br>*Updated at {last_updated}*", unsafe_allow_html=True)
 
 @st.fragment(run_every='10s')
 def update_live_data_plot(ax):
