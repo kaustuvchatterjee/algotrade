@@ -9,7 +9,7 @@ from datetime import datetime as dt
 from datetime import timedelta, time
 import pytz
 
-st.set_page_config(layout="wide")
+st.set_page_config(page_title='Algo Trade', page_icon=":material/waterfall_chart:", layout="wide")
 tz=pytz.timezone('Asia/Kolkata')
 
 ##-------------HELPER FUNCTIONS---------------------------
