@@ -56,8 +56,8 @@ def get_live_data(ticker):
                         'low': t.info['dayLow'],
                         'pchange': 100*((today_data['Close'].iloc[-1]-t.info['previousClose'])/t.info['previousClose']),
                         'prev_close': t.info['previousClose'],
-                        'tp_start': dt.fromtimestamp(t.history_metadata['currentTradingPeriod']['regular']['start'],tz=tz),
-                        'tp_end': dt.fromtimestamp(t.history_metadata['currentTradingPeriod']['regular']['end'],tz=tz)
+                        # 'tp_start': dt.fromtimestamp(t.history_metadata['currentTradingPeriod']['regular']['start'],tz=tz),
+                        # 'tp_end': dt.fromtimestamp(t.history_metadata['currentTradingPeriod']['regular']['end'],tz=tz)
                         }
         status = 1
 
@@ -182,36 +182,42 @@ def update_live_data():
             st.markdown(f"<br><br><br>*Updated at {last_updated}*", unsafe_allow_html=True)
 
 @st.fragment(run_every='10s')
-def update_live_data_plot(ax):
+def update_live_data_plot(ax, data_plot):
     ticker = tickers[ticker_names.index(st.session_state.ticker_name)]
     live_data, status = get_live_data(ticker)
     if status==1:
-        if (dt.now(tz=tz)>live_data['tp_start']) & (dt.now(tz=tz)<live_data['tp_end']):
-            if live_data['last']-live_data['open']>0:
-                ax.bar(live_data['timeVal'],live_data['last']-live_data['open'], bottom=live_data['open'], color='g', width=0.8)
-                ax.bar(live_data['timeVal'],live_data['high']-live_data['last'], bottom=live_data['last'], color='g', width=0.03)
-                ax.bar(live_data['timeVal'],live_data['low']-live_data['open'], bottom=live_data['open'], color='g', width=0.03)
-            else:
-                ax.bar(live_data['timeVal'],live_data['last']-live_data['open'], bottom=live_data['open'], color='r', width=0.8)
-                ax.bar(live_data['timeVal'],live_data['high']-live_data['last'], bottom=live_data['last'], color='r', width=0.03)
-                ax.bar(live_data['timeVal'],live_data['low']-live_data['open'], bottom=live_data['open'], color='r', width=0.03)
+        # if (dt.now(tz=tz)>live_data['tp_start']) & (dt.now(tz=tz)<live_data['tp_end']):
+        if live_data['last']-live_data['open']>0:
+            ax.bar(live_data['timeVal'],live_data['last']-live_data['open'], bottom=live_data['open'], color='g', width=0.8)
+            ax.bar(live_data['timeVal'],live_data['high']-live_data['last'], bottom=live_data['last'], color='g', width=0.03)
+            ax.bar(live_data['timeVal'],live_data['low']-live_data['open'], bottom=live_data['open'], color='g', width=0.03)
+        else:
+            ax.bar(live_data['timeVal'],live_data['last']-live_data['open'], bottom=live_data['open'], color='r', width=0.8)
+            ax.bar(live_data['timeVal'],live_data['high']-live_data['last'], bottom=live_data['last'], color='r', width=0.03)
+            ax.bar(live_data['timeVal'],live_data['low']-live_data['open'], bottom=live_data['open'], color='r', width=0.03)
 
-            ax.axhline(live_data['prev_close'], color='black', lw=0.3)
 
-            if live_data['last']>=live_data['prev_close']:
-                color = 'tab:green'
-                va_prev_close = 'top'
-                va_y_last = 'bottom'
-            else:
-                color = 'tab:red'
-                va_prev_close = 'bottom'
-                va_y_last = 'top'
+        l1 = ax.axhline(live_data['prev_close'], color='black', lw=0.3)
 
-            ax.axhline(live_data['last'], color=color, lw=0.3)
-            x = ax.get_xlim()[1]
-            ax.text(x,live_data['prev_close'], f"{live_data['prev_close']:.2f}", size=6, color='black', verticalalignment=va_prev_close,horizontalalignment='right')
-            ax.text(x,live_data['last'], f"{live_data['last']:.2f}", size=6, color=color, verticalalignment=va_y_last, horizontalalignment='right')
-            # st.pyplot(fig, use_container_width=True)
+        if live_data['last']>=live_data['prev_close']:
+            color = 'tab:green'
+            va_prev_close = 'top'
+            va_y_last = 'bottom'
+        else:
+            color = 'tab:red'
+            va_prev_close = 'bottom'
+            va_y_last = 'top'
+
+        l2 = ax.axhline(live_data['last'], color=color, lw=0.3)
+
+        x = ax.get_xlim()[1]
+        t1 = ax.text(x,live_data['prev_close'], f"{live_data['prev_close']:.2f}", size=6, color='black', verticalalignment=va_prev_close,horizontalalignment='right')
+        t2 = ax.text(x,live_data['last'], f"{live_data['last']:.2f}", size=6, color=color, verticalalignment=va_y_last, horizontalalignment='right')
+        data_plot.pyplot(fig)
+        l1.remove()
+        l2.remove()
+        t1.remove()
+        t2.remove()
 #----------------INPUTS-----------------------------------
 tickers, ticker_names = get_tickers('tickers.csv')
 st.sidebar.title('Parameters')
@@ -303,8 +309,8 @@ if len(data)>0:
         fig.subplots_adjust(hspace=0)
         # plt.savefig('nifty.png', dpi=300)
         # plt.show()
-        update_live_data_plot(ax0)
-        st.pyplot(fig, use_container_width=True)
+        data_plot = st.pyplot(fig, use_container_width=True)
+        update_live_data_plot(ax0, data_plot)
 
     except Exception as error:
         st.write("Unable to plot data!") 
