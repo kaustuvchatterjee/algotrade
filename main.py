@@ -200,15 +200,11 @@ def update_live_data_plot(ax):
 
         if live_data['last']>=live_data['prev_close']:
             color = 'tab:green'
-            y_prev_close = live_data['prev_close']-0.001*live_data['prev_close']
             va_prev_close = 'top'
-            y_last = live_data['last']+0.001*live_data['last']
             va_y_last = 'bottom'
         else:
             color = 'tab:red'
-            y_prev_close = live_data['prev_close']+0.01*live_data['prev_close']
             va_prev_close = 'bottom'
-            y_last = live_data['last']-0.01*live_data['last']
             va_y_last = 'top'
 
         ax.axhline(live_data['last'], color=color, lw=0.3)
