@@ -182,7 +182,7 @@ def update_live_data():
             st.markdown(f"<br><br><br>*Updated at {last_updated}*", unsafe_allow_html=True)
 
 @st.fragment(run_every='10s')
-def update_live_data_plot(ax, data_plot):
+def update_live_data_plot(ax, data_plot, fig):
     ticker = tickers[ticker_names.index(st.session_state.ticker_name)]
     live_data, status = get_live_data(ticker)
     if status==1:
@@ -309,8 +309,8 @@ if len(data)>0:
         fig.subplots_adjust(hspace=0)
         # plt.savefig('nifty.png', dpi=300)
         # plt.show()
-        data_plot = st.pyplot(plt, use_container_width=True)
-        update_live_data_plot(ax0, data_plot)
+        data_plot = st.pyplot(fig, use_container_width=True)
+        update_live_data_plot(ax0, data_plot, fig)
 
     except Exception as error:
         st.write("Unable to plot data!") 
