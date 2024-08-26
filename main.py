@@ -211,8 +211,7 @@ def update_live_data_plot(ax):
             x = ax.get_xlim()[1]
             ax.text(x,live_data['prev_close'], f"{live_data['prev_close']:.2f}", size=6, color='black', verticalalignment=va_prev_close,horizontalalignment='right')
             ax.text(x,live_data['last'], f"{live_data['last']:.2f}", size=6, color=color, verticalalignment=va_y_last, horizontalalignment='right')
-            plt.show()
-            # st.rerun(scope='fragment')
+            st.pyplot(fig, use_container_width=True)
 #----------------INPUTS-----------------------------------
 tickers, ticker_names = get_tickers('tickers.csv')
 st.sidebar.title('Parameters')
@@ -272,7 +271,6 @@ if len(data)>0:
             if data.iloc[i]['trade_signal'] == -1:
                 ax0.axvline(data.index[i], color='tab:green', lw=0.8)
 
-        update_live_data_plot(ax0)
         ax0.grid(axis='y', alpha=0.3)
         ax0.set_title(" "+st.session_state.ticker_name,loc='left',y=0.92)
         #-----RSI Plot------------
@@ -305,8 +303,8 @@ if len(data)>0:
         fig.subplots_adjust(hspace=0)
         # plt.savefig('nifty.png', dpi=300)
         # plt.show()
-
-        st.pyplot(fig, use_container_width=True)
+        update_live_data_plot(ax0)
+        # st.pyplot(fig, use_container_width=True)
 
     except Exception as error:
         st.write("Unable to plot data!") 
