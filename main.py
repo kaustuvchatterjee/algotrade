@@ -211,7 +211,8 @@ def update_live_data_plot(ax):
             x = ax.get_xlim()[1]
             ax.text(x,live_data['prev_close'], f"{live_data['prev_close']:.2f}", size=6, color='black', verticalalignment=va_prev_close,horizontalalignment='right')
             ax.text(x,live_data['last'], f"{live_data['last']:.2f}", size=6, color=color, verticalalignment=va_y_last, horizontalalignment='right')
-        plt.show()
+            plt.show()
+            st.rerun(scope='fragment')
 #----------------INPUTS-----------------------------------
 tickers, ticker_names = get_tickers('tickers.csv')
 st.sidebar.title('Parameters')
