@@ -213,7 +213,7 @@ def update_live_data_plot(ax, data_plot):
         x = ax.get_xlim()[1]
         t1 = ax.text(x,live_data['prev_close'], f"{live_data['prev_close']:.2f}", size=6, color='black', verticalalignment=va_prev_close,horizontalalignment='right')
         t2 = ax.text(x,live_data['last'], f"{live_data['last']:.2f}", size=6, color=color, verticalalignment=va_y_last, horizontalalignment='right')
-        data_plot.pyplot(fig)
+        data_plot.pyplot(plt)
         l1.remove()
         l2.remove()
         t1.remove()
@@ -309,7 +309,7 @@ if len(data)>0:
         fig.subplots_adjust(hspace=0)
         # plt.savefig('nifty.png', dpi=300)
         # plt.show()
-        data_plot = st.pyplot(fig, use_container_width=True)
+        data_plot = st.pyplot(plt, use_container_width=True)
         update_live_data_plot(ax0, data_plot)
 
     except Exception as error:
