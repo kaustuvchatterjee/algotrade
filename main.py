@@ -187,7 +187,6 @@ def update_live_data_plot(ax):
     ticker = tickers[ticker_names.index(st.session_state.ticker_name)]
     live_data, status = get_live_data(ticker)
     if status==1:
-        # print(dt.now(), live_data['tp_start'], live_data['tp_end'])s
         if (dt.now(tz=tz)>live_data['tp_start']) & (dt.now(tz=tz)<live_data['tp_end']):
             if live_data['last']-live_data['open']>0:
                 ax.bar(live_data['timeVal'],live_data['last']-live_data['open'], bottom=live_data['open'], color='g', width=0.8)
