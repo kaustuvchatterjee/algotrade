@@ -8,6 +8,7 @@ from matplotlib import gridspec
 from datetime import datetime as dt
 from datetime import timedelta, time
 import pytz
+import time
 
 st.set_page_config(page_title='Algo Trade', page_icon=":material/waterfall_chart:", layout="wide")
 tz=pytz.timezone('Asia/Kolkata')
@@ -326,5 +327,5 @@ else:
 while True:
     # Your Streamlit code here
     # st.write("Rerunning script...")
-    dt.time.sleep(60)  
+    time.sleep(60)  
     st.rerun()
