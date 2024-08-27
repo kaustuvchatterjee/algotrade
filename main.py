@@ -11,7 +11,7 @@ import pytz
 
 st.set_page_config(page_title='Algo Trade', page_icon=":material/waterfall_chart:", layout="wide")
 tz=pytz.timezone('Asia/Kolkata')
-
+fig = None
 ##-------------HELPER FUNCTIONS---------------------------
 def get_tickers(file_path='tickers.csv'):
     try:
@@ -27,8 +27,9 @@ def get_tickers(file_path='tickers.csv'):
     
     return tickers, ticker_names
 
-def get_ticker_data(ticker,duration):
+def get_ticker_data(duration):
     try:
+        ticker = tickers[ticker_names.index(st.session_state.ticker_name)]
         end_date = dt.today() # + timedelta(days=-1)
         # end_date = end_date.astimezone('Asia/Kolkata')
         start_date = end_date + timedelta(days=-duration)
@@ -56,8 +57,8 @@ def get_live_data(ticker):
                         'low': t.info['dayLow'],
                         'pchange': 100*((today_data['Close'].iloc[-1]-t.info['previousClose'])/t.info['previousClose']),
                         'prev_close': t.info['previousClose'],
-                        # 'tp_start': dt.fromtimestamp(t.history_metadata['currentTradingPeriod']['regular']['start'],tz=tz),
-                        # 'tp_end': dt.fromtimestamp(t.history_metadata['currentTradingPeriod']['regular']['end'],tz=tz)
+                        'tp_start': dt.fromtimestamp(t.history_metadata['currentTradingPeriod']['regular']['start'],tz=tz),
+                        'tp_end': dt.fromtimestamp(t.history_metadata['currentTradingPeriod']['regular']['end'],tz=tz),
                         }
         status = 1
 
@@ -182,19 +183,20 @@ def update_live_data():
             st.markdown(f"<br><br><br>*Updated at {last_updated}*", unsafe_allow_html=True)
 
 @st.fragment(run_every='10s')
-def update_live_data_plot(ax, data_plot):
+def update_live_data_plot(ax):
     ticker = tickers[ticker_names.index(st.session_state.ticker_name)]
     live_data, status = get_live_data(ticker)
     if status==1:
-        # if (dt.now(tz=tz)>live_data['tp_start']) & (dt.now(tz=tz)<live_data['tp_end']):
-        if live_data['last']-live_data['open']>0:
-            ax.bar(live_data['timeVal'],live_data['last']-live_data['open'], bottom=live_data['open'], color='g', width=0.8)
-            ax.bar(live_data['timeVal'],live_data['high']-live_data['last'], bottom=live_data['last'], color='g', width=0.03)
-            ax.bar(live_data['timeVal'],live_data['low']-live_data['open'], bottom=live_data['open'], color='g', width=0.03)
-        else:
-            ax.bar(live_data['timeVal'],live_data['last']-live_data['open'], bottom=live_data['open'], color='r', width=0.8)
-            ax.bar(live_data['timeVal'],live_data['high']-live_data['last'], bottom=live_data['last'], color='r', width=0.03)
-            ax.bar(live_data['timeVal'],live_data['low']-live_data['open'], bottom=live_data['open'], color='r', width=0.03)
+        print(dt.now(), live_data['tp_start'], live_data['tp_end'])
+        if (dt.now()>live_data['tp_start']) & (dt.now()<live_data['tp_end']):
+            if live_data['last']-live_data['open']>0:
+                ax.bar(live_data['timeVal'],live_data['last']-live_data['open'], bottom=live_data['open'], color='g', width=0.8)
+                ax.bar(live_data['timeVal'],live_data['high']-live_data['last'], bottom=live_data['last'], color='g', width=0.03)
+                ax.bar(live_data['timeVal'],live_data['low']-live_data['open'], bottom=live_data['open'], color='g', width=0.03)
+            else:
+                ax.bar(live_data['timeVal'],live_data['last']-live_data['open'], bottom=live_data['open'], color='r', width=0.8)
+                ax.bar(live_data['timeVal'],live_data['high']-live_data['last'], bottom=live_data['last'], color='r', width=0.03)
+                ax.bar(live_data['timeVal'],live_data['low']-live_data['open'], bottom=live_data['open'], color='r', width=0.03)
 
 
         l1 = ax.axhline(live_data['prev_close'], color='black', lw=0.3)
@@ -211,13 +213,11 @@ def update_live_data_plot(ax, data_plot):
         l2 = ax.axhline(live_data['last'], color=color, lw=0.3)
 
         x = ax.get_xlim()[1]
-        t1 = ax.text(x,live_data['prev_close'], f"{live_data['prev_close']:.2f}", size=6, color='black', verticalalignment=va_prev_close,horizontalalignment='right')
-        t2 = ax.text(x,live_data['last'], f"{live_data['last']:.2f}", size=6, color=color, verticalalignment=va_y_last, horizontalalignment='right')
-        data_plot.pyplot(fig)
-        l1.remove()
-        l2.remove()
-        t1.remove()
-        t2.remove()
+        d1 = ax.text(x,live_data['prev_close'], f"{live_data['prev_close']:.2f}", size=6, color='black', verticalalignment=va_prev_close,horizontalalignment='right')
+        d2 = ax.text(x,live_data['last'], f"{live_data['last']:.2f}", size=6, color=color, verticalalignment=va_y_last, horizontalalignment='right')
+
+
+
 #----------------INPUTS-----------------------------------
 tickers, ticker_names = get_tickers('tickers.csv')
 st.sidebar.title('Parameters')
@@ -232,11 +232,9 @@ with st.sidebar:
 
 st.markdown(f'# {st.session_state.ticker_name}')
 #----------------APP LOGIC---------------------------------
-ticker = tickers[ticker_names.index(st.session_state.ticker_name)]
-# placeholder = st.empty()
 update_live_data()
 ##-----------GET HISTORICAL DATA--------------------------
-data, status = get_ticker_data(ticker, duration)
+data, status = get_ticker_data(duration)
 
 if (status == 1) & (len(data)>0):
     rsi = get_rsi(data)
@@ -249,14 +247,16 @@ else:
 #-------------------PLOT--------------------------------------
 if len(data)>0:
     try:
+        st.cache_resource.clear()
         fig = plt.figure(figsize=(12, 6),dpi=1200)
+        fig.clear()
         gs = gridspec.GridSpec(3, 1, height_ratios=[3,1,1])
         ax0 = plt.subplot(gs[0])
         ax1 = plt.subplot(gs[1], sharex=ax0)
         ax2 = plt.subplot(gs[2], sharex=ax0)
         
         
-        ax0.plot(data.index, data['Close'], color='gray', label='Nifty 50 Index', lw=0.6)
+        ax0.plot(data.index, data['Close'], color='gray', lw=0.6)
         ax0.bar(up.index, up['Close']-up['Open'], bottom=up['Open'], color='g', width=0.8)
         ax0.bar(up.index, up['High']-up['Close'], bottom=up['Close'], color='g', width=0.03)
         ax0.bar(up.index, up['Low']-up['Open'], bottom=up['Open'], color='g', width=0.03)
@@ -309,8 +309,11 @@ if len(data)>0:
         fig.subplots_adjust(hspace=0)
         # plt.savefig('nifty.png', dpi=300)
         # plt.show()
-        data_plot = st.pyplot(fig, use_container_width=True)
-        update_live_data_plot(ax0, data_plot)
+        # data_plot = st.pyplot(fig, use_container_width=True, dpi=600)
+        update_live_data_plot(ax0)
+        st.pyplot(fig, dpi=600)
+
+
 
     except Exception as error:
         st.write("Unable to plot data!") 
@@ -318,12 +321,11 @@ if len(data)>0:
 else:
     st.write('Unable to plot data!')
 
-#-----Plot Live Data---------
 
 
 
 # while True:
 #     # Your Streamlit code here
 #     st.write("Rerunning script...")
-#     time.sleep(300)  # 5 minutes in seconds
+#     time.sleep(30)  # 5 minutes in seconds
 #     st.rerun()
