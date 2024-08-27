@@ -188,7 +188,7 @@ def update_live_data_plot(ax):
     live_data, status = get_live_data(ticker)
     if status==1:
         # print(dt.now(), live_data['tp_start'], live_data['tp_end'])s
-        if (dt.now()>live_data['tp_start']) & (dt.now()<live_data['tp_end']):
+        if (dt.now(tz=tz)>live_data['tp_start']) & (dt.now(tz=tz)<live_data['tp_end']):
             if live_data['last']-live_data['open']>0:
                 ax.bar(live_data['timeVal'],live_data['last']-live_data['open'], bottom=live_data['open'], color='g', width=0.8)
                 ax.bar(live_data['timeVal'],live_data['high']-live_data['last'], bottom=live_data['last'], color='g', width=0.03)
