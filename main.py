@@ -323,8 +323,8 @@ else:
 
 
 
-# while True:
-#     # Your Streamlit code here
-#     st.write("Rerunning script...")
-#     time.sleep(30)  # 5 minutes in seconds
-#     st.rerun()
+while True:
+    # Your Streamlit code here
+    # st.write("Rerunning script...")
+    dt.time.sleep(60)  
+    st.rerun()
