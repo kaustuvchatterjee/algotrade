@@ -283,6 +283,8 @@ if len(data)>0:
         ax1.plot(data.index, rsi, color='tab:red', alpha=0.8)
         ax1.axhline(75, linestyle='--', color='red')
         ax1.fill_between(data.index,75,rsi, where=rsi>=74, color='tab:orange', alpha = 0.1)
+        ax1.axhline(30, linestyle='--', color='teal')
+        ax1.fill_between(data.index,30,rsi, where=rsi<30, color='tab:green', alpha = 0.1)
         ax1.set_ylim([0,100])
         for i in range(len(data)):
             if (data.iloc[i]['z_cross'] == 1) | (data.iloc[i]['z_cross'] == -1):
