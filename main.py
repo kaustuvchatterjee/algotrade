@@ -22,10 +22,8 @@ ticker = tickers[ticker_names.index(st.session_state.ticker_name)]
 
 # Historical Data
 data, hist_status = algotrade.get_ticker_data(ticker, duration)
-print(data.tail())
 if hist_status == 1:
     data = algotrade.get_macd(data)
-    print(data.tail())
     pchange = 100*(data.iloc[-1]['Close'] - data.iloc[-2]['Close'])/data.iloc[-2]['Close']
 #-------------------PLOT------------------------------------
 # traces
