@@ -1,4 +1,5 @@
 import algotrade
+import yfinance as yf
 import streamlit as st
 from datetime import datetime as dt
 import time
@@ -102,6 +103,7 @@ fig.add_annotation(
       font=dict(size=20),
       showarrow=False,
       xanchor = 'left',
+      yanchor = 'bottom',
       xref='x domain',
       yref='y domain',
       row = 1,
@@ -243,7 +245,9 @@ with cols[2]:
                 **Open**: {data.iloc[-1]['Open']:.2f}<br> \
                 **Low**: {data.iloc[-1]['Low']:.2f}", unsafe_allow_html=True)
 with cols[3]:
-    last_updated = dt.strftime(dt.now(tz=tz),'%d %b %Y %H:%M')
+    t = yf.Ticker(ticker)
+    live_data = t.history(period = '1d', interval='1m')
+    last_updated = dt.strftime(live_data.index[-1],'%d %b %Y %H:%M')
     st.markdown(f"<br><br><br>*Updated at {last_updated}*", unsafe_allow_html=True)
 
 st.plotly_chart(fig)
