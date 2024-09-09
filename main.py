@@ -75,13 +75,14 @@ rsi_plot = go.Scatter(
     y = data['rsi'],
     mode = 'lines',
     line = dict(color='red', width=2),
-    name = 'Close'
+    name = 'RSI'
 )
 
 macd_plot = go.Bar(
     x= data['Date'],
     y = data['MACD_Histo'],
-    marker_color = data['Color']
+    marker_color = data['Color'],
+    name='MACD'
 )
 
 # Figure
@@ -93,6 +94,18 @@ plot3 = [macd_plot]
 
 #subplot1
 fig.add_traces(plot1, rows=1, cols=1)
+fig.add_annotation(
+      x=0,
+      y=1,
+      text = f"{st.session_state.ticker_name}",
+      font=dict(size=20),
+      showarrow=False,
+      xanchor = 'left',
+      xref='x domain',
+      yref='y domain',
+      row = 1,
+      col = 1,
+)
 
 if pchange>=0:
       fig.add_hline(y=data.iloc[-2]['Close'], line_color='black', line_width=0.3)
@@ -147,6 +160,18 @@ for i in range(len(data)):
 fig.add_traces(plot2, rows=2, cols=1)
 fig.add_hline(y=70, line_color='red', line_dash='dash', row=2, col=1)
 fig.add_hline(y=30, line_color='teal', line_dash='dash', row=2, col=1)
+fig.add_annotation(
+      x=0,
+      y=1,
+      text = "RSI",
+      font=dict(size=20),
+      showarrow=False,
+      xanchor = 'left',
+      xref='x domain',
+      yref='y domain',
+      row = 2,
+      col = 1,
+)
 for i in range(len(data)):
             if (data.iloc[i]['z_cross'] == 1) | (data.iloc[i]['z_cross'] == -1):
                 fig.add_vline(data.iloc[i]['Date'], line_color='lightgray', line_width=0.3)
@@ -157,6 +182,18 @@ for i in range(len(data)):
                 fig.add_vline(data.iloc[i]['Date'], line_color='green', line_width=0.8)
 #subplot3
 fig.add_traces(plot3, rows=3, cols=1)
+fig.add_annotation(
+      x=0,
+      y=1,
+      text = "MACD",
+      font=dict(size=20),
+      showarrow=False,
+      xanchor = 'left',
+      xref='x domain',
+      yref='y domain',
+      row = 3,
+      col = 1,
+)
 for i in range(len(data)):
             if (data.iloc[i]['z_cross'] == 1) | (data.iloc[i]['z_cross'] == -1):
                 fig.add_vline(data.iloc[i]['Date'], line_color='lightgray', line_width=0.3)
