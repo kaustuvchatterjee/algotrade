@@ -49,7 +49,7 @@ sma_plot = go.Scatter(
     x = data['Date'],
     y = data['sma'],
     mode = 'lines',
-    line = dict(color='blue', width=1),
+    line = dict(color='#1f77b4', width=1),
     name = 'SMA'
 )
 
