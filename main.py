@@ -3,13 +3,11 @@ import yfinance as yf
 import streamlit as st
 from datetime import datetime as dt
 import time
-import pytz
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import plotly
 
 st.set_page_config(page_title='Algo Trade', page_icon=":material/waterfall_chart:", layout="wide")
-tz=pytz.timezone('Asia/Kolkata')
 
 #----------------INPUTS-----------------------------------
 tickers, ticker_names = algotrade.get_tickers('tickers.csv')
@@ -23,7 +21,7 @@ with st.sidebar:
 ticker = tickers[ticker_names.index(st.session_state.ticker_name)]
 
 # Historical Data
-data, hist_status = algotrade.get_ticker_data(ticker, duration)
+data, last_updated, hist_status = algotrade.get_ticker_data(ticker, duration)
 if hist_status == 1:
     data = algotrade.get_macd(data)
     pchange = 100*(data.iloc[-1]['Close'] - data.iloc[-2]['Close'])/data.iloc[-2]['Close']
@@ -246,12 +244,6 @@ with cols[2]:
                 **Open**: {data.iloc[-1]['Open']:.2f}<br> \
                 **Low**: {data.iloc[-1]['Low']:.2f}", unsafe_allow_html=True)
 with cols[3]:
-    t = yf.Ticker(ticker)
-    live_data = t.history(period = '1d', interval='1m')
-    if len(live_data)>0:
-          last_updated = dt.strftime(live_data.index[-1],'%d %b %Y %H:%M')
-    else:
-          last_updated = dt.strftime(data.iloc[-1]['Date'],'%d %b %Y')
     st.markdown(f"*Updated on {last_updated}*", unsafe_allow_html=True)
     refresh = st.button('Refresh')
 

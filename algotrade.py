@@ -5,7 +5,6 @@ from datetime import datetime as dt
 from datetime import timedelta
 import pytz
 
-tz=pytz.timezone('Asia/Kolkata')
 
 def get_tickers(file_path='tickers.csv'):
     try:
@@ -23,19 +22,28 @@ def get_tickers(file_path='tickers.csv'):
 
 def get_ticker_data(ticker, duration):
     try:
+        t = yf.Ticker(ticker)
+        tz = pytz.timezone(t.info['timeZoneFullName'])
         end_date = dt.today()
         end_date = end_date.astimezone(tz=tz)
         start_date = end_date + timedelta(days=-duration)
         # start_date = start_date.astimezone('Asia/Kolkata')
         data = yf.download(ticker, start=start_date, end=end_date)
         data.index = data.index.tz_localize('Asia/Kolkata')
+        if t.info['quoteType'] == 'INDEX':
+            live_data = t.history(period = '1d', interval='1m')
+        elif t.info['quoteType'] == 'MUTUALFUND':
+            live_data = t.history(period = '1mo', interval='1d')
+        else:
+            live_data = None
+        last_updated = dt.strftime(live_data.index[-1],'%d %b %Y %H:%M')
         status = 1
     except Exception as error:
         status = 0
         data=[]
         print(error)
 
-    return data, status
+    return data, last_updated, status
 
 def get_rsi(data):
     change = data["Close"].diff()
@@ -114,3 +122,8 @@ def get_macd(data, short_window=12, long_window=26, signal_window=9, bollinger_w
     
     data.reset_index(inplace=True)
     return data
+
+def get_live_data(ticker):
+    t = yf.Ticker(ticker)
+    
+    live_data = t.history(period = '1d', interval='1m')
