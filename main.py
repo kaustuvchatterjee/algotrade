@@ -109,6 +109,7 @@ if pchange>=0:
             x=data.iloc[-1]['Date'],
             y=data.iloc[-1]['Close'],
             text=f"{data.iloc[-1]['Close']:.2f}",
+            font=dict(color="green"),
             showarrow=False,
             xanchor="left",
             yanchor='bottom'
@@ -128,6 +129,7 @@ else:
             x=data.iloc[-1]['Date'],
             y=data.iloc[-1]['Close'],
             text=f"{data.iloc[-1]['Close']:.2f}",
+            font=dict(color="red"),
             showarrow=False,
             xanchor="left",
             yanchor='top'
