@@ -2,12 +2,13 @@ import algotrade
 import streamlit as st
 from datetime import datetime as dt
 import time
+import pytz
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import plotly
 
 st.set_page_config(page_title='Algo Trade', page_icon=":material/waterfall_chart:", layout="wide")
-
+tz=pytz.timezone('Asia/Kolkata')
 
 #----------------INPUTS-----------------------------------
 tickers, ticker_names = algotrade.get_tickers('tickers.csv')
@@ -242,7 +243,7 @@ with cols[2]:
                 **Open**: {data.iloc[-1]['Open']:.2f}<br> \
                 **Low**: {data.iloc[-1]['Low']:.2f}", unsafe_allow_html=True)
 with cols[3]:
-    last_updated = dt.strftime(dt.now(),'%d %b %Y %H:%M')
+    last_updated = dt.strftime(dt.now(tz=tz),'%d %b %Y %H:%M')
     st.markdown(f"<br><br><br>*Updated at {last_updated}*", unsafe_allow_html=True)
 
 st.plotly_chart(fig)
