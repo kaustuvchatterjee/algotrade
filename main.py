@@ -219,6 +219,7 @@ fig.update_layout(layout)
 
 
 #----------------PAGE--------------------------------
+st.title(f"{st.session_state.ticker_name}")
 cols = st.columns([0.1,0.4,0.2,0.3])
 st.markdown("""
                <style>
@@ -247,14 +248,15 @@ with cols[2]:
 with cols[3]:
     t = yf.Ticker(ticker)
     live_data = t.history(period = '1d', interval='1m')
-    last_updated = dt.strftime(live_data.index[-1],'%d %b %Y %H:%M')
-    st.markdown(f"<br><br><br>*Updated at {last_updated}*", unsafe_allow_html=True)
+    if len(live_data)>0:
+          last_updated = dt.strftime(live_data.index[-1],'%d %b %Y %H:%M')
+    else:
+          last_updated = dt.strftime(data.iloc[-1]['Date'],'%d %b %Y')
+    st.markdown(f"*Updated on {last_updated}*", unsafe_allow_html=True)
+    refresh = st.button('Refresh')
 
 st.plotly_chart(fig)
 
 
-while True:
-    # Your Streamlit code here
-    # st.write("Rerunning script...")
-    time.sleep(60)  
-    st.rerun()
+if refresh:
+      st.rerun()
