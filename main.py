@@ -218,7 +218,7 @@ fig.update_layout(layout)
 
 #----------------PAGE--------------------------------
 st.title(f"{st.session_state.ticker_name}")
-cols = st.columns([0.1,0.4,0.2,0.3])
+cols = st.columns([0.5,0.2,0.3])
 st.markdown("""
                <style>
                .big-font-green {
@@ -232,18 +232,18 @@ st.markdown("""
                </style>
                """, unsafe_allow_html=True)
 
-with cols[1]:
+with cols[0]:
     if pchange>0:          
         st.markdown(f'<p class="big-font-green"><b>{data.iloc[-1]['Close']:.2f} <span>&uarr;</span></b> ({pchange:.2f}%)</p>', unsafe_allow_html=True)
     else:
         st.markdown(f'<p class="big-font-red"><b>{data.iloc[-1]['Close']:.2f} <span>&darr;</span></b> ({pchange:.2f}%)</p>', unsafe_allow_html=True)
     
-with cols[2]:
+with cols[1]:
     st.markdown(f"**Prev Close**: {data.iloc[-2]['Close']:.2f}<br> \
                 **High**: {data.iloc[-1]['High']:.2f}<br> \
                 **Open**: {data.iloc[-1]['Open']:.2f}<br> \
                 **Low**: {data.iloc[-1]['Low']:.2f}", unsafe_allow_html=True)
-with cols[3]:
+with cols[2]:
     st.markdown(f"*Updated on {last_updated}*", unsafe_allow_html=True)
     refresh = st.button('Refresh')
 
