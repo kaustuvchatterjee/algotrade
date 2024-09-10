@@ -30,13 +30,16 @@ def get_ticker_data(ticker, duration):
         # start_date = start_date.astimezone('Asia/Kolkata')
         data = yf.download(ticker, start=start_date, end=end_date)
         data.index = data.index.tz_localize('Asia/Kolkata')
-        if t.info['quoteType'] == 'INDEX':
+        
+        if (t.info['quoteType'] == 'INDEX') | (t.info['quoteType'] == 'EQUITY'):
             live_data = t.history(period = '1d', interval='1m')
+            last_updated = dt.strftime(live_data.index[-1],'%d %b %Y %H:%M')
         elif t.info['quoteType'] == 'MUTUALFUND':
             live_data = t.history(period = '1mo', interval='1d')
+            last_updated = dt.strftime(live_data.index[-1],'%d %b %Y %H:%M')
         else:
-            live_data = None
-        last_updated = dt.strftime(live_data.index[-1],'%d %b %Y %H:%M')
+            last_updated = "N/A"
+        
         status = 1
     except Exception as error:
         status = 0
