@@ -8,7 +8,7 @@ from plotly.subplots import make_subplots
 import plotly
 
 st.set_page_config(page_title='Algo Trade', page_icon=":material/waterfall_chart:", layout="wide")
-
+st.cache_data.clear()
 #----------------INPUTS-----------------------------------
 tickers, ticker_names = algotrade.get_tickers('tickers.csv')
 st.sidebar.title('Parameters')
