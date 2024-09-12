@@ -33,10 +33,13 @@ def get_ticker_data(ticker, duration):
         
         if (t.info['quoteType'] == 'INDEX') | (t.info['quoteType'] == 'EQUITY'):
             live_data = t.history(period = '1d', interval='1m')
-            last_updated = dt.strftime(live_data.index[-1],'%d %b %Y %H:%M')
+            live_data.reset_index(inplace=True)
+            last_updated = dt.strftime(live_data.iloc[-1]['Datetime'],'%d %b %Y %H:%M')
         elif t.info['quoteType'] == 'MUTUALFUND':
             live_data = t.history(period = '1mo', interval='1d')
-            last_updated = dt.strftime(live_data.index[-1],'%d %b %Y %H:%M')
+            live_data.reset_index(inplace=True)
+            live_data.rename(columns={'Date': 'Datetime'}, inplace=True)
+            last_updated = dt.strftime(live_data.iloc[-1]['Datetime'],'%d %b %Y %H:%M')
         else:
             last_updated = "N/A"
         
@@ -46,7 +49,7 @@ def get_ticker_data(ticker, duration):
         data=[]
         print(error)
 
-    return data, last_updated, status
+    return data, live_data, last_updated, status
 
 def get_rsi(data):
     change = data["Close"].diff()

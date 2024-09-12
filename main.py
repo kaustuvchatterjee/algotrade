@@ -7,8 +7,23 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import plotly
 
-st.set_page_config(page_title='Algo Trade', page_icon=":material/waterfall_chart:", layout="wide")
 st.cache_data.clear()
+st.set_page_config(
+      page_title='Algo Trade',
+      page_icon=":material/waterfall_chart:",
+      layout="wide",
+      )
+st.markdown("""
+        <style>
+               .block-container {
+                    padding-top: 1rem;
+                    padding-bottom: 0rem;
+                    padding-left: 5rem;
+                    padding-right: 5rem;
+                }
+        </style>
+        """, unsafe_allow_html=True)
+
 #----------------INPUTS-----------------------------------
 tickers, ticker_names = algotrade.get_tickers('tickers.csv')
 st.sidebar.title('Parameters')
@@ -21,7 +36,7 @@ with st.sidebar:
 ticker = tickers[ticker_names.index(st.session_state.ticker_name)]
 
 # Historical Data
-data, last_updated, hist_status = algotrade.get_ticker_data(ticker, duration)
+data, live_data, last_updated, hist_status = algotrade.get_ticker_data(ticker, duration)
 if hist_status == 1:
     data = algotrade.get_macd(data)
     pchange = 100*(data.iloc[-1]['Close'] - data.iloc[-2]['Close'])/data.iloc[-2]['Close']
@@ -215,22 +230,38 @@ layout = {
 }
 fig.update_layout(layout)
 
+fig2 = go.Figure()
+today_plot = go.Candlestick(
+      x=live_data['Datetime'],
+      open=live_data['Open'],
+      close=live_data['Close'],
+      high=live_data['High'],
+      low=live_data['Low']
+)
 
-#----------------PAGE--------------------------------
+fig2.add_trace(today_plot)
+
+layout = {
+    "height": 600,
+    "showlegend": False,
+    "xaxis": {"rangeslider": {"visible": False}},
+}
+fig2.update_layout(layout)
+#----------------PAGE----------------------------
 st.title(f"{st.session_state.ticker_name}")
 cols = st.columns([0.5,0.2,0.3])
 st.markdown("""
-               <style>
-               .big-font-green {
-               font-size:36px !important;
-               color:green;
-               }
-               .big-font-red{
-               font-size:36px !important;
-               color:red;
-               }
-               </style>
-               """, unsafe_allow_html=True)
+            <style>
+            .big-font-green {
+            font-size:36px !important;
+            color:green;
+            }
+            .big-font-red{
+            font-size:36px !important;
+            color:red;
+            }
+            </style>
+            """, unsafe_allow_html=True)
 
 with cols[0]:
     if pchange>0:          
@@ -247,7 +278,13 @@ with cols[2]:
     st.markdown(f"*Updated on {last_updated}*", unsafe_allow_html=True)
     refresh = st.button('Refresh')
 
-st.plotly_chart(fig)
+tab1, tab2 = st.tabs(['Historical', 'Current'])
+
+with tab1:
+    st.plotly_chart(fig)
+
+with tab2:
+      st.plotly_chart(fig2)
 
 
 if refresh:
