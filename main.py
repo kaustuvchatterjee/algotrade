@@ -230,7 +230,7 @@ layout = {
 }
 fig.update_layout(layout)
 
-fig2 = go.Figure()
+fig2 = make_subplots(specs=[[{"secondary_y": True}]])
 today_plot = go.Candlestick(
       x=live_data['Datetime'],
       open=live_data['Open'],
@@ -238,13 +238,22 @@ today_plot = go.Candlestick(
       high=live_data['High'],
       low=live_data['Low']
 )
+vol_plot = go.Bar(
+      x=live_data['Datetime'],
+      y=live_data['Volume'],
+      name='Volume'
+)
 
-fig2.add_trace(today_plot)
+fig2.add_trace(today_plot, secondary_y=False)
+fig2.add_trace(vol_plot, secondary_y=True)
 
 layout = {
     "height": 600,
     "showlegend": False,
     "xaxis": {"rangeslider": {"visible": False}},
+    "yaxis2": {"showticklabels": False,
+               "showgrid": False,
+               "range": [0,live_data['Volume'].max()*10]} 
 }
 fig2.update_layout(layout)
 #----------------PAGE----------------------------
