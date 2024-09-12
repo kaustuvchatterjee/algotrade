@@ -4,6 +4,10 @@ import yfinance as yf
 from datetime import datetime as dt
 from datetime import timedelta
 import pytz
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+import plotly
+import streamlit as st
 
 
 def get_tickers(file_path='tickers.csv'):
@@ -129,7 +133,224 @@ def get_macd(data, short_window=12, long_window=26, signal_window=9, bollinger_w
     data.reset_index(inplace=True)
     return data
 
-def get_live_data(ticker):
-    t = yf.Ticker(ticker)
-    
-    live_data = t.history(period = '1d', interval='1m')
+def historical_figure(data, pchange):
+    # traces
+    ub_plot = go.Scatter(
+        x = data['Date'],
+        y = data['upper_bound'],
+        mode = 'lines',
+        line = dict(color='lightblue', width=0),
+        name = 'Upper Bound'
+    )
+
+    lb_plot = go.Scatter(
+        x = data['Date'],
+        y = data['lower_bound'],
+        mode = 'lines',
+        line = dict(color='lightblue', width=0),
+        fill = 'tonexty',
+        fillcolor = 'rgba(31, 119, 180, 0.1)',
+        name = 'Lower Bound'
+    )
+
+    sma_plot = go.Scatter(
+        x = data['Date'],
+        y = data['sma'],
+        mode = 'lines',
+        line = dict(color='#1f77b4', width=1),
+        name = 'SMA'
+    )
+
+    close_plot = go.Scatter(
+        x = data['Date'],
+        y = data['Close'],
+        mode = 'lines',
+        line = dict(color='lightgray', width=1),
+        name = 'Close'
+    )
+
+    candle_stick = go.Candlestick(
+        x = data['Date'],
+        open = data['Open'],
+        close = data['Close'],
+        high = data['High'],
+        low = data['Low'],
+        name = 'Candlestick'
+    )
+
+    rsi_plot = go.Scatter(
+        x = data['Date'],
+        y = data['rsi'],
+        mode = 'lines',
+        line = dict(color='red', width=2),
+        name = 'RSI'
+    )
+
+    macd_plot = go.Bar(
+        x= data['Date'],
+        y = data['MACD_Histo'],
+        marker_color = data['Color'],
+        name='MACD'
+    )
+
+    # Figure
+    fig = make_subplots(rows=3, cols=1, row_heights=[0.6,0.2,0.2], vertical_spacing=0, shared_xaxes=True)
+    plot1 = [ub_plot, lb_plot, sma_plot, close_plot, candle_stick]
+    plot2 = [rsi_plot]
+    plot3 = [macd_plot]
+
+
+    #subplot1
+    fig.add_traces(plot1, rows=1, cols=1)
+    fig.add_annotation(
+        x=0,
+        y=1,
+        text = f"{st.session_state.ticker_name}",
+        font=dict(size=20),
+        showarrow=False,
+        xanchor = 'left',
+        yanchor = 'bottom',
+        xref='x domain',
+        yref='y domain',
+        row = 1,
+        col = 1,
+    )
+
+    if pchange>=0:
+        fig.add_hline(y=data.iloc[-2]['Close'], line_color='black', line_width=0.3)
+        fig.add_annotation(
+                x=data.iloc[-1]['Date'],
+                y=data.iloc[-2]['Close'],
+                text=f"{data.iloc[-2]['Close']:.2f}",
+                showarrow=False,
+                xanchor="left",
+                yanchor='top'
+                )      
+        fig.add_hline(y=data.iloc[-1]['Close'], line_color='green', line_width=0.3)
+        fig.add_annotation(
+                x=data.iloc[-1]['Date'],
+                y=data.iloc[-1]['Close'],
+                text=f"{data.iloc[-1]['Close']:.2f}",
+                font=dict(color="green"),
+                showarrow=False,
+                xanchor="left",
+                yanchor='bottom'
+                )
+    else:
+        fig.add_hline(y=data.iloc[-2]['Close'], line_color='black', line_width=0.3)
+        fig.add_annotation(
+                x=data.iloc[-1]['Date'],
+                y=data.iloc[-2]['Close'],
+                text=f"{data.iloc[-2]['Close']:.2f}",
+                showarrow=False,
+                xanchor="left",
+                yanchor='bottom'
+                )      
+        fig.add_hline(y=data.iloc[-1]['Close'], line_color='red', line_width=0.3)
+        fig.add_annotation(
+                x=data.iloc[-1]['Date'],
+                y=data.iloc[-1]['Close'],
+                text=f"{data.iloc[-1]['Close']:.2f}",
+                font=dict(color="red"),
+                showarrow=False,
+                xanchor="left",
+                yanchor='top'
+                )
+    for i in range(len(data)):
+                if (data.iloc[i]['z_cross'] == 1) | (data.iloc[i]['z_cross'] == -1):
+                    fig.add_vline(data.iloc[i]['Date'], line_color='lightgray', line_width=0.3)
+    for i in range(len(data)):
+                if data.iloc[i]['trade_signal'] == 1:
+                    fig.add_vline(data.iloc[i]['Date'], line_color='red', line_width=0.8)
+                if data.iloc[i]['trade_signal'] == -1:
+                    fig.add_vline(data.iloc[i]['Date'], line_color='green', line_width=0.8)
+
+    #subplot2
+    fig.add_traces(plot2, rows=2, cols=1)
+    fig.add_hline(y=70, line_color='red', line_dash='dash', row=2, col=1)
+    fig.add_hline(y=30, line_color='teal', line_dash='dash', row=2, col=1)
+    fig.add_annotation(
+        x=0,
+        y=1,
+        text = "RSI",
+        font=dict(size=20),
+        showarrow=False,
+        xanchor = 'left',
+        xref='x domain',
+        yref='y domain',
+        row = 2,
+        col = 1,
+    )
+    for i in range(len(data)):
+                if (data.iloc[i]['z_cross'] == 1) | (data.iloc[i]['z_cross'] == -1):
+                    fig.add_vline(data.iloc[i]['Date'], line_color='lightgray', line_width=0.3)
+    for i in range(len(data)):
+                if data.iloc[i]['trade_signal'] == 1:
+                    fig.add_vline(data.iloc[i]['Date'], line_color='red', line_width=0.8)
+                if data.iloc[i]['trade_signal'] == -1:
+                    fig.add_vline(data.iloc[i]['Date'], line_color='green', line_width=0.8)
+    #subplot3
+    fig.add_traces(plot3, rows=3, cols=1)
+    fig.add_annotation(
+        x=0,
+        y=1,
+        text = "MACD",
+        font=dict(size=20),
+        showarrow=False,
+        xanchor = 'left',
+        xref='x domain',
+        yref='y domain',
+        row = 3,
+        col = 1,
+    )
+    for i in range(len(data)):
+                if (data.iloc[i]['z_cross'] == 1) | (data.iloc[i]['z_cross'] == -1):
+                    fig.add_vline(data.iloc[i]['Date'], line_color='lightgray', line_width=0.3)
+    for i in range(len(data)):
+                if data.iloc[i]['trade_signal'] == 1:
+                    fig.add_vline(data.iloc[i]['Date'], line_color='red', line_width=0.8)
+                if data.iloc[i]['trade_signal'] == -1:
+                    fig.add_vline(data.iloc[i]['Date'], line_color='green', line_width=0.8)
+
+
+    # Figure Layout
+    layout = {
+        "height": 600,
+        "showlegend": False,
+        "xaxis": {"rangeslider": {"visible": False}},
+        "yaxis2": {"range": [0,100]},
+        "yaxis3": {"showticklabels": False},
+    }
+    fig.update_layout(layout)
+
+    return fig
+
+def current_figure(live_data):
+    fig = make_subplots(specs=[[{"secondary_y": True}]])
+    today_plot = go.Candlestick(
+        x=live_data['Datetime'],
+        open=live_data['Open'],
+        close=live_data['Close'],
+        high=live_data['High'],
+        low=live_data['Low']
+    )
+    vol_plot = go.Bar(
+        x=live_data['Datetime'],
+        y=live_data['Volume'],
+        name='Volume'
+    )
+
+    fig.add_trace(today_plot, secondary_y=False)
+    fig.add_trace(vol_plot, secondary_y=True)
+
+    layout = {
+        "height": 600,
+        "showlegend": False,
+        "xaxis": {"rangeslider": {"visible": False}},
+        "yaxis2": {"showticklabels": False,
+                "showgrid": False,
+                "range": [0,live_data['Volume'].max()*10]} 
+    }
+    fig.update_layout(layout)
+
+    return fig
