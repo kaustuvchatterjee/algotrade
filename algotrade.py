@@ -27,13 +27,14 @@ def get_tickers(file_path='tickers.csv'):
 def get_ticker_data(ticker, duration):
     try:
         t = yf.Ticker(ticker)
-        tz = pytz.timezone(t.info['timeZoneFullName'])
+        tz = pytz.timezone(t.info['exchangeTimezoneName'])
         end_date = dt.today()
         end_date = end_date.astimezone(tz=tz)
         start_date = end_date + timedelta(days=-duration)
         # start_date = start_date.astimezone('Asia/Kolkata')
         data = yf.download(ticker, start=start_date, end=end_date)
         data.index = data.index.tz_localize('Asia/Kolkata')
+        data.columns = data.columns.droplevel(1)
         
         if (t.info['quoteType'] == 'INDEX') | (t.info['quoteType'] == 'EQUITY'):
             live_data = t.history(period = '1d', interval='1m')
@@ -84,16 +85,16 @@ def get_macd(data, short_window=12, long_window=26, signal_window=9, bollinger_w
     data['Candle'] = data['Close'] - data['Open']
     data['Momentum'] = data['Candle'].rolling(7).mean()
     data['Dir'] = data['MACD_Histo'].diff()
-
+    
     for i in range(len(data)):
         if data.iloc[i]['MACD_Histo'] > 0:
-            if data.iloc[i]['Dir']>0:
+            if data.iloc[i]['Dir'].item()>0:
                 data.at[data.index[i],'Color'] = '#008080'
             else:
                 data.at[data.index[i],'Color'] = '#b2d8d8'
 
         elif data.iloc[i]['MACD_Histo'] < 0:
-            if data.iloc[i]['Dir']>0:
+            if data.iloc[i]['Dir'].item()>0:
                 data.at[data.index[i],'Color'] = '#ef7753'
             else:
                 data.at[data.index[i],'Color'] = '#ec4242'
