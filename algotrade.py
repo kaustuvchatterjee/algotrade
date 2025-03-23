@@ -53,7 +53,7 @@ def get_ticker_data(ticker, duration):
         status = 0
         data=[]
         print(error)
-
+    print(live_data)
     return data, live_data, last_updated, status
 
 def get_rsi(data):
