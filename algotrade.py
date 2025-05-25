@@ -8,6 +8,7 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import plotly
 import streamlit as st
+from curl_cffi import requests
 
 
 def get_tickers(file_path='tickers.csv'):
@@ -16,7 +17,8 @@ def get_tickers(file_path='tickers.csv'):
         tickers=df['ticker'].to_list()
         ticker_names = []
         for ticker in tickers:
-            t = yf.Ticker(ticker)
+            session = requests.Session(impersonate="chrome")
+            t = yf.Ticker(ticker, session=session)
             ticker_names.append(t.info['shortName'])
     except:
         tickers =['^NSEI']
@@ -26,7 +28,8 @@ def get_tickers(file_path='tickers.csv'):
 
 def get_ticker_data(ticker, duration):
     try:
-        t = yf.Ticker(ticker)
+        session = requests.Session(impersonate="chrome")
+        t = yf.Ticker(ticker, session=session)
         tz = pytz.timezone(t.info['exchangeTimezoneName'])
         end_date = dt.today()
         end_date = end_date.astimezone(tz=tz)
@@ -53,7 +56,7 @@ def get_ticker_data(ticker, duration):
         status = 0
         data=[]
         print(error)
-    print(live_data)
+    # print(live_data)
     return data, live_data, last_updated, status
 
 def get_rsi(data):
